@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Rastreio de massa - VIAR Bloco 1</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#1F3864">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Rastreio">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Rastreio de massa - VIAR Bloco 1</title>
 <style>
 :root{
   --navy:#1F3864; --yellow:#FFC72C;
@@ -136,27 +136,6 @@ input:focus, select:focus, textarea:focus, button:focus-visible{
 }
 .end{text-align:center; margin-top:18px}
 
-/* ---- RDO: cadastros, clima, horários, mão de obra/equipamentos ---- */
-.reg-add{display:flex; gap:8px; margin-top:8px}
-.reg-add input{flex:1}
-.reg-add button, .qty-add button{
-  min-height:46px; padding:0 14px; border-radius:8px; border:1.5px solid var(--accent);
-  background:transparent; color:var(--accent); font:inherit; font-weight:700; cursor:pointer; white-space:nowrap;
-}
-.usina-dens{display:flex; align-items:center; gap:8px; margin:-2px 0 12px; font-size:13px; color:var(--muted)}
-.usina-dens input{width:84px; min-height:38px; text-align:right; padding:6px 8px}
-.period{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 12px 12px; margin-bottom:12px}
-.period h3{margin:0 0 10px; font-size:15px}
-.seg3{grid-template-columns:1fr 1fr 1fr}
-.etapa{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 12px 12px; margin-bottom:12px}
-.etapa h3{margin:0 0 10px; font-size:15px}
-.qty-list{display:flex; flex-direction:column; gap:8px}
-.qty-row{display:grid; grid-template-columns:1fr 76px; gap:10px; align-items:center}
-.qty-row .name{font-size:15px}
-.qty-row input{text-align:center}
-.qty-add{display:flex; gap:8px; margin-top:10px}
-.qty-add input{flex:1}
-
 /* Barra fixa: saldo de massa e envio */
 .bar{
   position:fixed; left:0; right:0; bottom:0; background:var(--surface);
@@ -192,6 +171,41 @@ input:focus, select:focus, textarea:focus, button:focus-visible{
   min-height:42px; padding:0 14px; border-radius:8px; border:1.5px solid currentColor;
   background:transparent; color:inherit; font:inherit; font-weight:700; cursor:pointer;
 }
+
+/* Abas */
+.tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:8px 0 6px}
+.tabs .wrap{display:grid; grid-template-columns:repeat(3,1fr); gap:6px}
+.tab{min-height:46px; border:1.5px solid var(--line); background:var(--surface); color:var(--ink); border-radius:8px; font:inherit; font-size:15px; cursor:pointer}
+.tab[aria-selected="true"]{background:var(--navy); color:#fff; font-weight:700; border-color:var(--navy); box-shadow:inset 0 -4px 0 var(--yellow)}
+.hint.info{color:var(--muted)}
+
+/* Resumo */
+.cards{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.cs{background:var(--calc-bg); border-radius:8px; padding:8px 10px; min-width:0}
+.cs .k{font-size:12px; color:var(--muted)}
+.cs .v{font-size:19px; font-weight:700; color:var(--accent); font-variant-numeric:tabular-nums; white-space:nowrap}
+.grp{background:var(--surface); border:1px solid var(--line); border-left:6px solid var(--yellow); border-radius:10px; padding:10px 12px; margin-bottom:12px}
+.grp h3{margin:0; font-size:16px}
+.grp .meta{font-size:13px; color:var(--muted); margin:2px 0 8px}
+.strip{position:relative; height:22px; border-radius:6px; background:var(--calc-bg); overflow:hidden}
+.strip i{position:absolute; top:0; bottom:0; background:var(--navy); border-right:1px solid var(--yellow); min-width:3px}
+.strip-l{display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:3px; font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto; border:1px solid var(--line); border-radius:8px; background:var(--surface); margin-bottom:12px}
+.tw table{border-collapse:collapse; width:100%; font-size:13px; font-variant-numeric:tabular-nums}
+.tw th, .tw td{padding:7px 8px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap}
+.tw th{background:var(--navy); color:#fff; font-weight:700}
+.tw th.l, .tw td.l{text-align:left}
+.tw tr.tot td{font-weight:700; background:var(--calc-bg)}
+.sub-h{font-size:15px; margin:16px 0 8px}
+.empty{color:var(--muted); font-size:14px; padding:6px 2px}
+
+/* Cadastros */
+.reg-row{display:grid; grid-template-columns:1fr 110px auto; gap:8px; align-items:center; margin-bottom:8px}
+.reg-row.eq{grid-template-columns:1fr auto}
+.reg-row .nm{font-size:16px; overflow-wrap:anywhere}
+.reg-add{display:grid; grid-template-columns:1fr 110px; gap:8px; margin:12px 0 8px}
+.reg-add.eq{grid-template-columns:1fr}
+.reg-add .btn-add{grid-column:1 / -1; min-height:46px}
 </style>
 </head>
 <body>
@@ -201,96 +215,64 @@ input:focus, select:focus, textarea:focus, button:focus-visible{
     <h1>Rastreio de massa</h1>
     <p class="sub">VIAR Bloco 1, Dromos Infraestrutura</p>
     <p class="saved" id="saved"></p>
-    <p class="saved" id="ver">Versão 7: RDO completo - clima, mão de obra, equipamentos e horários</p>
+    <p class="saved" id="ver">Versão 6.2: caixas e subcaixas, equipes, usinas com densidade e aba Resumo</p>
   </div>
 </header>
 
+<nav class="tabs" role="tablist" aria-label="Seções">
+  <div class="wrap">
+    <button id="tabL" class="tab" role="tab" type="button" aria-selected="true">Lançamentos</button>
+    <button id="tabR" class="tab" role="tab" type="button" aria-selected="false">Resumo</button>
+    <button id="tabC" class="tab" role="tab" type="button" aria-selected="false">Cadastros</button>
+  </div>
+</nav>
+
 <main class="wrap">
-  <section class="sec" aria-labelledby="h-id">
-    <h2 id="h-id">Identificação</h2>
-    <div class="grid">
-      <label class="f"><span class="lbl">Equipe</span><select id="equipe"></select></label>
-      <label class="f"><span class="lbl">Data</span><input id="data" type="date"></label>
-      <label class="f"><span class="lbl">Rodovia</span><select id="rodovia"></select></label>
-      <label class="f"><span class="lbl">Encarregado</span><input id="resp" type="text" autocomplete="off"></label>
-      <label class="f"><span class="lbl">Usina (densidade padrão)</span><select id="usinaAtiva"></select></label>
-    </div>
-    <div class="reg-add">
-      <input id="equipeNovo" type="text" placeholder="Cadastrar nova equipe">
-      <button id="equipeAdd" type="button">+ Adicionar</button>
-    </div>
-  </section>
-
-  <section class="sec" aria-labelledby="h-verif">
-    <h2 id="h-verif">Verificações do dia</h2>
-    <div class="grid">
-      <div class="f full">
-        <span class="lbl">Todos os funcionários da atividade estão utilizando os EPIs?</span>
-        <div class="seg" id="segEpi" role="radiogroup" aria-label="EPIs">
-          <button type="button" role="radio" data-v="sim">Sim</button>
-          <button type="button" role="radio" data-v="nao">Não</button>
-        </div>
+  <div id="pgL">
+    <section class="sec" aria-labelledby="h-id">
+      <h2 id="h-id">Identificação</h2>
+      <div class="grid">
+        <label class="f"><span class="lbl">Equipe</span><select id="equipe"></select></label>
+        <label class="f"><span class="lbl">Data</span><input id="data" type="date"></label>
+        <label class="f"><span class="lbl">Rodovia</span><select id="rodovia"></select></label>
+        <label class="f"><span class="lbl">Responsável</span><input id="resp" type="text" autocomplete="off"></label>
       </div>
-      <div class="f full">
-        <span class="lbl">Os resíduos gerados pela atividade foram recolhidos?</span>
-        <div class="seg" id="segRes" role="radiogroup" aria-label="Resíduos">
-          <button type="button" role="radio" data-v="sim">Sim</button>
-          <button type="button" role="radio" data-v="nao">Não</button>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="sec" aria-labelledby="h-clima">
-    <h2 id="h-clima">Clima e praticabilidade</h2>
-    <div id="clima"></div>
-  </section>
+    <section class="sec" aria-labelledby="h-lanc">
+      <h2 id="h-lanc">Lançamentos</h2>
+      <div id="list"></div>
+      <button id="add" class="btn-add" type="button">+ Novo lançamento</button>
+      <p class="note" id="hintAdd">Repete placa, usina, faixa, sentido, largura, espessura e densidade do lançamento anterior e sugere a próxima caixa (1.1 vira 1.2). Mais de um caminhão na mesma caixa: use 1.1, 1.2, 1.3... Estacas e comprimento são digitados em cada lançamento.</p>
+    </section>
 
-  <section class="sec" aria-labelledby="h-hor">
-    <h2 id="h-hor">Horários das atividades</h2>
-    <div class="grid">
-      <label class="f"><span class="lbl">Início geral</span><input id="horIni" type="time"></label>
-      <label class="f"><span class="lbl">Término geral</span><input id="horFim" type="time"></label>
-    </div>
-    <div id="etapas"></div>
-  </section>
+    <section class="sec" aria-labelledby="h-us">
+      <h2 id="h-us">Massa saída das usinas</h2>
+      <div id="usinas"></div>
+      <div class="row-u tot"><span class="name">Total usina</span><b id="totUsina">-</b></div>
+    </section>
 
-  <section class="sec" aria-labelledby="h-mo">
-    <h2 id="h-mo">Mão de obra</h2>
-    <div id="maoDeObra" class="qty-list"></div>
-    <div class="qty-add">
-      <input id="moNovo" type="text" placeholder="Outra função">
-      <button id="moAdd" type="button">+ Adicionar</button>
-    </div>
-  </section>
+    <div class="end"><button id="reset" class="link" type="button">Limpar tudo e começar novo dia</button></div>
+  </div>
 
-  <section class="sec" aria-labelledby="h-eq">
-    <h2 id="h-eq">Equipamentos e veículos</h2>
-    <div id="equipamentos" class="qty-list"></div>
-    <div class="qty-add">
-      <input id="eqNovo" type="text" placeholder="Outro equipamento">
-      <button id="eqAdd" type="button">+ Adicionar</button>
-    </div>
-  </section>
+  <div id="pgR" hidden>
+    <section class="sec" aria-labelledby="h-res">
+      <h2 id="h-res">Resumo do avanço</h2>
+      <div id="resumo"></div>
+    </section>
+  </div>
 
-  <section class="sec" aria-labelledby="h-lanc">
-    <h2 id="h-lanc">Lançamentos</h2>
-    <div id="list"></div>
-    <button id="add" class="btn-add" type="button">+ Novo lançamento</button>
-    <p class="note" id="hintAdd">Repete placa, faixa, largura, espessura e densidade do lançamento anterior. A estaca inicial continua da estaca final anterior.</p>
-  </section>
-
-  <section class="sec" aria-labelledby="h-us">
-    <h2 id="h-us">Massa saída das usinas</h2>
-    <div id="usinas"></div>
-    <div class="row-u tot"><span class="name">Total usina</span><b id="totUsina">-</b></div>
-    <div class="reg-add">
-      <input id="usinaNovo" type="text" placeholder="Cadastrar nova usina">
-      <button id="usinaAdd" type="button">+ Adicionar</button>
-    </div>
-  </section>
-
-  <div class="end"><button id="reset" class="link" type="button">Limpar tudo e começar novo dia</button></div>
+  <div id="pgC" hidden>
+    <section class="sec" aria-labelledby="h-eq">
+      <h2 id="h-eq">Equipes</h2>
+      <div id="regEq"></div>
+    </section>
+    <section class="sec" aria-labelledby="h-usi">
+      <h2 id="h-usi">Usinas e densidade padrão</h2>
+      <p class="note" style="margin:0 0 10px">Ao escolher a usina em um lançamento, a densidade é preenchida com o valor daqui (e pode ser alterada no lançamento).</p>
+      <div id="regUs"></div>
+    </section>
+  </div>
 </main>
 
 <div class="bar">
@@ -348,48 +330,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 'use strict';
 
 var KEY = 'viar-b1-rastreio-massa-v1';
-var EQUIPES_KEY = 'viar-b1-rastreio-equipes-v1';
-var USINAS_KEY = 'viar-b1-rastreio-usinas-v1';
 var FAIXAS = ['1','2','3','4','5','6','7','8','9','10','11','12','Alça'];
 var RODOVIAS = ['PR-418','PR-423','PR-427','BR-277','BR-376','BR-476'];
-var REQ = [
-  ['placa','placa (7 caracteres)'], ['ei','estaca inicial'], ['sentido','sentido'], ['faixa','faixa'],
-  ['comp','comprimento'], ['larg','largura'], ['esp','espessura'], ['dens','densidade']
-];
-var PERIODOS = [{id:'manha', nome:'Manhã'}, {id:'tarde', nome:'Tarde'}, {id:'noite', nome:'Noite'}];
-var TEMPOS = ['Bom', 'Nublado', 'Chuva'];
-var ETAPAS = [
-  {id:'fresagem', nome:'Fresagem'},
-  {id:'pintura',  nome:'Pintura de ligação'},
-  {id:'cbuq',     nome:'Aplicação de CBUQ'},
-  {id:'rolagem',  nome:'Rolagem - compactação'}
-];
-var CARGOS_PADRAO = [
-  'Encarregado de Pavimentação','Técnico TST','Apontador','Servente (massa e laboratório)',
-  'Rasteleiro','Mesista','Motorista','Motorista Carreta Prancha','Op. Mesa Vibroacabadora',
-  'Op. de Rolo','Op. de Minicarregadeira','Op. de Fresadora','Op. de Caneta Espargidor',
-  'Oficial de Pintura','Enc. Pintura','Laboratorista','Enc. Sinalização','Spotter',
-  'Ajudante de Sinalização','Motorista Sinalização','Servente de Pintura (Tacha)','Mecânico','Lubrificador'
-];
-var EQUIPS_PADRAO = [
-  'Vibro Acabadora de Asfalto','Rolo Pneu','Rolo Chapa','Caminhão Espargidor','Caminhão Truck',
-  'Caminhão Comboio','Caminhão Compressor','Caminhão Prancha','Caminhão Pipa','Fresa 1000',
-  'Minicarregadeira','Compressor','Gerador','Ônibus','Tanque de Emulsão',
-  'Rompedor/Serra Clipper','Veículo Pintura','Caminhão Sinalização','Torre de Iluminação','Martelete Tacha'
-];
-
-function carregarReg(key, padrao){
-  try{
-    var s = localStorage.getItem(key);
-    if(!s) return padrao;
-    var a = JSON.parse(s);
-    return (Array.isArray(a) && a.length) ? a : padrao;
-  }catch(e){ return padrao; }
+var EQ_KEY = 'viar-b1-rastreio-equipes-v61', US_KEY = 'viar-b1-rastreio-usinas-v61';
+var EQ_BASE = ['Fresa 1', 'Fresa 2'];
+var US_BASE = [{id:'ns', nome:'Nova Serrinha', dens:'2,420', fixo:true}, {id:'mr', nome:'Morro Redondo', dens:'2,420', fixo:true}];
+function lerReg(k){
+  try{ var o = JSON.parse(localStorage.getItem(k)); return Array.isArray(o) ? o : null; }catch(e){ return null; }
 }
-function salvarReg(key, arr){ try{ localStorage.setItem(key, JSON.stringify(arr)); }catch(e){} }
-
-var EQUIPES = carregarReg(EQUIPES_KEY, [{id:'f1', nome:'Fresa 1'}, {id:'f2', nome:'Fresa 2'}]);
-var USINAS  = carregarReg(USINAS_KEY,  [{id:'ns', nome:'Nova Serrinha', dens:''}, {id:'mr', nome:'Morro Redondo', dens:''}]);
+function gravarReg(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+var eqCustom = (lerReg(EQ_KEY) || []).filter(function(n){ return typeof n === 'string' && n && EQ_BASE.indexOf(n) < 0; });
+var USINAS = (lerReg(US_KEY) || []).filter(function(u){ return u && u.id && u.nome; });
+US_BASE.slice().reverse().forEach(function(b){
+  var f = USINAS.filter(function(u){ return u.id === b.id; })[0];
+  if(f) f.fixo = true; else USINAS.unshift({id:b.id, nome:b.nome, dens:b.dens, fixo:true});
+});
+function equipes(){ return EQ_BASE.concat(eqCustom); }
+function usinaPorId(id){ return USINAS.filter(function(u){ return u.id === id; })[0] || null; }
+function nomeUsina(id){ var u = usinaPorId(id); return u ? u.nome : ''; }
+var REQ = [
+  ['placa','placa (7 caracteres)'], ['usina','usina'], ['ei','estaca inicial'], ['ef','estaca final'],
+  ['sentido','sentido'], ['faixa','faixa'], ['comp','comprimento'], ['larg','largura'], ['esp','espessura'], ['dens','densidade']
+];
 
 function $(id){ return document.getElementById(id); }
 function mk(tag, cls, text){
@@ -422,41 +384,19 @@ function fmtIn(n, d){ return n.toFixed(d).replace('.', ','); }
 var uidN = 0;
 function uid(){ uidN++; return 'c' + Date.now().toString(36) + uidN; }
 
-function novaCarga(prev, usinaId){
-  var l = {id:uid(), placa:'', ticket:'', ei:'', efm:'', sentido:'', faixa:'', comp:'', larg:'', esp:'', dens:'', caixa:'', obs:'', touched:false};
+function novaCarga(prev){
+  var l = {id:uid(), caixa:'', placa:'', usina:'', ei:'', ef:'', sentido:'', faixa:'', comp:'', larg:'', esp:'', dens:'', obs:'', touched:false};
   if(prev){
-    l.placa = prev.placa; l.sentido = prev.sentido; l.faixa = prev.faixa;
-    l.larg = prev.larg; l.esp = prev.esp; l.dens = prev.dens;
-    var c = calc(prev);
-    if(c.ef != null) l.ei = fmtIn(c.ef, 3);
-  }else if(usinaId){
-    var u = USINAS.filter(function(x){ return x.id === usinaId; })[0];
-    if(u && u.dens) l.dens = u.dens;
+    l.placa = prev.placa; l.usina = prev.usina; l.sentido = prev.sentido; l.faixa = prev.faixa;
+    l.larg = prev.larg; l.esp = prev.esp; l.dens = prev.dens;      // estacas e comprimento: sempre digitados
+    var m = /^(\d+)\.(\d+)$/.exec(prev.caixa || '');
+    if(m) l.caixa = m[1] + '.' + (Number(m[2]) + 1);                // 1.1 -> 1.2 (outro caminhão na mesma caixa)
+    else if(/^\d+$/.test(prev.caixa || '')) l.caixa = String(Number(prev.caixa) + 1);
   }
   return l;
 }
-function climaVazio(){
-  var o = {};
-  PERIODOS.forEach(function(p){ o[p.id] = {tempo:'', pluv:'', temp:'', prat:'', obs:''}; });
-  return o;
-}
-function etapasVazio(){
-  var o = {};
-  ETAPAS.forEach(function(e){ o[e.id] = {ini:'', fim:'', obs:''}; });
-  return o;
-}
 function novoEstado(){
-  var uaId = (USINAS[0] || {}).id || '';
-  return {
-    h:{equipeId:(EQUIPES[0] || {}).id || '', data:hoje(), rodovia:'', resp:'', epi:'', residuos:''},
-    loads:[novaCarga(null, uaId)],
-    usina:{}, usinaAtiva:uaId,
-    clima:climaVazio(),
-    hor:{geralIni:'', geralFim:''},
-    etapas:etapasVazio(),
-    mo: CARGOS_PADRAO.map(function(n){ return {nome:n, qtd:''}; }),
-    eq: EQUIPS_PADRAO.map(function(n){ return {nome:n, qtd:''}; })
-  };
+  return {h:{equipe:'Fresa 1', data:hoje(), rodovia:'', resp:''}, loads:[novaCarga(null)], usina:{}};
 }
 function carregar(){
   try{
@@ -464,25 +404,18 @@ function carregar(){
     if(!s) return null;
     var o = JSON.parse(s);
     if(!o || !o.h || !Array.isArray(o.loads) || !o.usina) return null;
-    if(!o.loads.length) o.loads = [novaCarga(null, (USINAS[0] || {}).id)];
+    if(!o.loads.length) o.loads = [novaCarga(null)];
     o.loads.forEach(function(l){
       if(!l.id) l.id = uid();
-      l.placa = String(l.placa || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);   // rascunhos antigos tinham hífen
-      if(l.ticket == null) l.ticket = '';
+      if(l.usina == null) l.usina = '';
       if(l.caixa == null) l.caixa = '';
+      if(l.ef == null){                       // rascunho da versão anterior: estaca final automática vira valor digitado
+        var a = num(l.efm), b = num(l.ei), c = num(l.comp);
+        l.ef = a != null ? String(l.efm) : (b != null && c != null ? fmtIn(b + c/1000, 3) : '');
+      }
+      delete l.efm;
+      l.placa = String(l.placa || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);   // rascunhos antigos tinham hífen
     });
-    USINAS.forEach(function(u){ if(o.usina[u.id] == null) o.usina[u.id] = ''; });
-    if(o.h.equipeId == null) o.h.equipeId = (EQUIPES[0] || {}).id || '';
-    if(o.h.epi == null) o.h.epi = '';
-    if(o.h.residuos == null) o.h.residuos = '';
-    if(!o.usinaAtiva) o.usinaAtiva = (USINAS[0] || {}).id || '';
-    if(!o.clima) o.clima = climaVazio();
-    else PERIODOS.forEach(function(p){ if(!o.clima[p.id]) o.clima[p.id] = {tempo:'', pluv:'', temp:'', prat:'', obs:''}; });
-    if(!o.hor) o.hor = {geralIni:'', geralFim:''};
-    if(!o.etapas) o.etapas = etapasVazio();
-    else ETAPAS.forEach(function(e){ if(!o.etapas[e.id]) o.etapas[e.id] = {ini:'', fim:'', obs:''}; });
-    if(!Array.isArray(o.mo) || !o.mo.length) o.mo = CARGOS_PADRAO.map(function(n){ return {nome:n, qtd:''}; });
-    if(!Array.isArray(o.eq) || !o.eq.length) o.eq = EQUIPS_PADRAO.map(function(n){ return {nome:n, qtd:''}; });
     return o;
   }catch(e){ return null; }
 }
@@ -491,11 +424,8 @@ var tentou = false;
 
 function calc(l){
   var ei = num(l.ei), c = num(l.comp), w = num(l.larg), e = num(l.esp), d = num(l.dens);
-  var auto = (ei != null && c != null) ? ei + c/1000 : null;
-  var man = l.efm ? num(l.efm) : null;
   return {
-    ef: man != null ? man : auto,
-    manual: man != null,
+    ef: num(l.ef),
     t:  (c != null && w != null && e != null && d != null) ? c*w*e*d : null
   };
 }
@@ -511,11 +441,81 @@ function faltas(l){
   return REQ.filter(function(r){
     var k = r[0], v = l[k];
     if(k === 'placa') return !/^[A-Z0-9]{7}$/.test(v || '');
-    if(k === 'sentido' || k === 'faixa') return !v;
+    if(k === 'sentido' || k === 'faixa' || k === 'usina') return !v;
     return num(v) == null;
   }).map(function(r){ return {k:r[0], label:r[1]}; });
 }
 function totalUsina(){ return USINAS.reduce(function(s, u){ return s + (num(state.usina[u.id]) || 0); }, 0); }
+
+/* ---------- agrupamentos (Resumo, PDF e Excel) ---------- */
+function caixaPrincipal(l){ var c = String(l.caixa || '').split('.')[0]; return c; }
+function caixaSub(l){ var p = String(l.caixa || '').split('.'); return p.length > 1 && p[1] !== '' ? Number(p[1]) : null; }
+/* Uma linha por caixa: subcaixas (1.1, 1.2, ...) viram uma só, da estaca inicial da primeira à final da última */
+function caixas(loads){
+  var map = {}, arr = [];
+  linhas(loads).forEach(function(r){
+    var l = r.l, pr = caixaPrincipal(l), key = pr ? 'c' + pr : 'x' + l.id;
+    var g = map[key];
+    if(!g){ g = map[key] = {key:key, num:pr, itens:[]}; arr.push(g); }
+    g.itens.push(r);
+  });
+  var acc = 0;
+  arr.forEach(function(g){
+    var it = g.itens.map(function(r, i){ return {r:r, i:i, s:caixaSub(r.l)}; });
+    it.sort(function(a, b){ return (a.s == null ? 1e9 : a.s) - (b.s == null ? 1e9 : b.s) || a.i - b.i; });
+    var first = it[0].r, last = it[it.length - 1].r;
+    g.n = g.itens.length;
+    g.faixa = first.l.faixa || ''; g.sentido = first.l.sentido || '';
+    g.ei = num(first.l.ei); g.ef = last.c.ef;
+    g.larg = num(first.l.larg); g.esp = num(first.l.esp); g.dens = num(first.l.dens);
+    var comps = g.itens.map(function(r){ return num(r.l.comp); }).filter(function(v){ return v != null; });
+    g.comp = comps.length ? comps.reduce(function(a, b){ return a + b; }, 0) : null;
+    g.t = null;
+    g.itens.forEach(function(r){ if(r.c.t != null) g.t = (g.t || 0) + r.c.t; });
+    g.usinas = [];
+    g.itens.forEach(function(r){ var un = nomeUsina(r.l.usina); if(un && g.usinas.indexOf(un) < 0) g.usinas.push(un); });
+    g.min = null; g.max = null;
+    g.itens.forEach(function(r){ [num(r.l.ei), r.c.ef].forEach(function(v){ if(v == null) return; if(g.min == null || v < g.min) g.min = v; if(g.max == null || v > g.max) g.max = v; }); });
+    if(g.t != null) acc += g.t;
+    g.acum = g.t == null ? null : acc;
+    var subs = it.map(function(x){ return x.r.l.caixa; }).filter(Boolean);
+    g.rotulo = g.num ? (subs.length > 1 && g.itens.length > 1 ? g.num + ' (' + subs[0] + ' a ' + subs[subs.length - 1] + ')' : g.num) : '-';
+  });
+  return arr;
+}
+function grupos(loads){
+  var map = {}, arr = [];
+  caixas(loads).forEach(function(c){
+    var key = c.faixa + '|' + c.sentido;
+    var g = map[key];
+    if(!g){ g = map[key] = {faixa:c.faixa, sentido:c.sentido, n:0, t:0, min:null, max:null, itens:[], usinas:[]}; arr.push(g); }
+    g.n++; if(c.t != null) g.t += c.t;
+    [c.min, c.max].forEach(function(v){
+      if(v == null) return;
+      if(g.min == null || v < g.min) g.min = v;
+      if(g.max == null || v > g.max) g.max = v;
+    });
+    g.itens.push({a:c.ei, b:c.ef});
+    c.usinas.forEach(function(un){ if(g.usinas.indexOf(un) < 0) g.usinas.push(un); });
+  });
+  function fi(f){ var i = FAIXAS.indexOf(f); return i < 0 ? 99 : i; }
+  function si(x){ return x === 'Crescente' ? 0 : (x === 'Decrescente' ? 1 : 2); }
+  arr.sort(function(a, b){ return fi(a.faixa) - fi(b.faixa) || si(a.sentido) - si(b.sentido); });
+  return arr;
+}
+function porUsina(loads){
+  var out = USINAS.map(function(u){ return {u:u, nome:u.nome, n:0, t:0, massa:num(state.usina[u.id]), cx:{}}; });
+  var sem = {u:null, nome:'(sem usina)', n:0, t:0, massa:null, cx:{}};
+  linhas(loads).forEach(function(r){
+    var o = out.filter(function(x){ return x.u.id === r.l.usina; })[0] || sem;
+    var pr = caixaPrincipal(r.l), key = pr ? 'c' + pr : 'x' + r.l.id;
+    if(!o.cx[key]){ o.cx[key] = 1; o.n++; }
+    if(r.c.t != null) o.t += r.c.t;
+  });
+  if(sem.n) out.push(sem);
+  return out.filter(function(o){ return o.n > 0 || o.massa != null; });
+}
+function rotuloGrupo(g){ return (g.faixa ? 'Faixa ' + g.faixa : 'Sem faixa') + ' - ' + (g.sentido || 'sem sentido'); }
 
 /* ---------- persistência ---------- */
 var saveT = null;
@@ -572,7 +572,7 @@ function buildCard(l, idx){
     var i = mk('input');
     i.type = 'text'; i.value = l[key] || ''; i.autocomplete = 'off';
     i.setAttribute('autocorrect', 'off'); i.spellcheck = false;
-    if(o.num) i.inputMode = 'decimal';
+    if(o.num || o.cx) i.inputMode = 'decimal';
     if(o.placa){ i.autocapitalize = 'characters'; }
     if(o.ph) i.placeholder = o.ph;
     i.addEventListener('input', function(){
@@ -580,6 +580,9 @@ function buildCard(l, idx){
       if(o.num){
         var c = v.replace(/[^0-9.,]/g, '');
         if(c !== v){ i.value = c; v = c; }
+      }else if(o.cx){
+        var q = v.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+        if(q !== v){ i.value = q; v = q; }
       }else if(o.placa){
         var p = v.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
         if(p !== v){ i.value = p; v = p; }
@@ -601,10 +604,19 @@ function buildCard(l, idx){
   var g = mk('div', 'grid');
   card.appendChild(g);
 
+  g.appendChild(campo('Caixa (ex.: 1.1)', txt('caixa', {cx:true, ph:'1.1'})));
   refs.hPlaca = mk('p', 'hint');
   g.appendChild(campo('Placa', txt('placa', {placa:true, ph:'ABC1D23'}), {hint:refs.hPlaca}));
 
-  g.appendChild(campo('Ticket da usina', txt('ticket', {ph:'NF / ticket'})));
+  g.appendChild(campo('Estaca inicial (km)', txt('ei', {num:true, ph:'66,210'})));
+  g.appendChild(campo('Estaca final (km)',   txt('ef', {num:true, ph:'66,220'})));
+
+  refs.hComp = mk('p', 'hint');
+  g.appendChild(campo('Comprimento (m)', txt('comp', {num:true, ph:'10,00'}), {hint:refs.hComp}));
+  g.appendChild(campo('Largura (m)',     txt('larg', {num:true, ph:'3,50'})));
+
+  refs.hEsp = mk('p', 'hint');
+  g.appendChild(campo('Espessura (m)', txt('esp', {num:true, ph:'0,060'}), {hint:refs.hEsp}));
 
   var sel = mk('select');
   var o0 = mk('option', '', 'Selecione'); o0.value = '';
@@ -636,30 +648,22 @@ function buildCard(l, idx){
   segW.appendChild(seg);
   g.appendChild(segW);
 
-  g.appendChild(campo('Estaca inicial (km)', txt('ei',   {num:true, ph:'66,210'})));
-  g.appendChild(campo('Comprimento (m)',     txt('comp', {num:true, ph:'10,00'})));
-  g.appendChild(campo('Largura (m)',         txt('larg', {num:true, ph:'3,50'})));
-
-  refs.hEsp = mk('p', 'hint');
-  g.appendChild(campo('Espessura (m)', txt('esp', {num:true, ph:'0,060'}), {hint:refs.hEsp}));
+  var su = mk('select');
+  var u0 = mk('option', '', 'Selecione'); u0.value = '';
+  su.appendChild(u0);
+  USINAS.forEach(function(u){ var o = mk('option', '', u.nome); o.value = u.id; su.appendChild(o); });
+  su.value = l.usina || '';
+  su.addEventListener('change', function(){
+    l.usina = su.value; l.touched = true;
+    var u = usinaPorId(su.value);
+    if(u && num(u.dens) != null){ l.dens = u.dens; refs.inputs.dens.value = u.dens; }   // densidade vem do cadastro da usina
+    changed();
+  });
+  refs.inputs.usina = su;
+  g.appendChild(campo('Usina', su));
 
   refs.hDens = mk('p', 'hint');
   g.appendChild(campo('Densidade (t/m³)', txt('dens', {num:true, ph:'2,420'}), {hint:refs.hDens}));
-
-  var efW = mk('label', 'f');
-  efW.appendChild(mk('span', 'lbl', 'Estaca final (km)'));
-  efW.appendChild(txt('efm', {num:true, ph:'calculada'}));
-  refs.efReset = mk('button', 'mini', 'Recalcular pelo comprimento');
-  refs.efReset.type = 'button';
-  refs.efReset.hidden = true;
-  refs.efReset.addEventListener('click', function(ev){
-    ev.preventDefault();
-    l.efm = ''; changed();
-  });
-  efW.appendChild(refs.efReset);
-  g.appendChild(efW);
-
-  g.appendChild(campo('Caixa', txt('caixa', {ph:'nº da caixa'})));
 
   var ta = mk('textarea');
   ta.rows = 2; ta.value = l.obs || '';
@@ -714,17 +718,20 @@ function refresh(){
     var l = r.l, u = ui[l.id];
     if(!u) return;
     if(r.c.t != null) acc = r.acum;
-    var efIn = u.inputs.efm, editada = !!l.efm;
-    if(!editada) efIn.value = r.c.ef == null ? '' : fmtIn(r.c.ef, 3);
-    efIn.classList.toggle('auto', !editada);
-    u.efReset.hidden = !editada;
     u.t.textContent  = r.c.t  == null ? '-' : fmt(r.c.t, 3) + ' t';
     u.a.textContent  = r.acum == null ? '-' : fmt(r.acum, 3) + ' t';
     u.sub.textContent = l.placa || '';
     u.hPlaca.textContent = (l.placa && l.placa.length === 7 && !/^[A-Z]{3}[0-9][A-Z][0-9]{2}$/.test(l.placa)) ? 'Fora do padrão Mercosul (ex.: ABC1D23)' : '';
     var e = num(l.esp), d = num(l.dens);
     u.hEsp.textContent  = (e != null && (e <= 0 || e > 0.3)) ? 'Informe em metros, ex.: 0,060' : '';
-    u.hDens.textContent = (d != null && (d < 1.5 || d > 3.5)) ? 'Informe em t/m³, ex.: 2,420' : '';
+    var ud = usinaPorId(l.usina), hd = '';
+    if(d != null && (d < 1.5 || d > 3.5)) hd = 'Informe em t/m³, ex.: 2,420';
+    else if(d != null && ud && num(ud.dens) != null && Math.abs(d - num(ud.dens)) > 0.0005) hd = 'Diferente do cadastro da usina (' + ud.dens + ')';
+    u.hDens.textContent = hd;
+    var ei0 = num(l.ei), ef0 = r.c.ef, cp0 = num(l.comp), hc = '';
+    if(ei0 != null && ef0 != null && cp0 != null && Math.abs(Math.abs(ef0 - ei0) * 1000 - cp0) > 0.5)
+      hc = 'As estacas indicam ' + fmt(Math.abs(ef0 - ei0) * 1000, 2) + ' m';
+    u.hComp.textContent = hc;
     var f = faltas(l), bad = tentou && l.touched && f.length > 0;
     u.card.classList.toggle('bad', bad);
     u.miss.hidden = !bad;
@@ -742,78 +749,206 @@ function refresh(){
   var pct = total > 0 ? Math.min(100, acc / total * 100) : 0;
   $('gaugeFill').style.width = pct + '%';
   $('gauge').classList.toggle('over', total > 0 && sobra < -0.0005);
+  if(!$('pgR').hidden) renderResumo();
 }
 
-/* ---------- cabeçalho, equipes e usinas ---------- */
-function montarSelectEquipe(){
-  var sel = $('equipe');
-  sel.textContent = '';
-  EQUIPES.forEach(function(e){ var o = mk('option', '', e.nome); o.value = e.id; sel.appendChild(o); });
+/* ---------- aba Resumo ---------- */
+function tocadas(){ return state.loads.filter(function(l){ return l.touched; }); }
+function tabelaEl(heads, rows, totalRow){
+  var w = mk('div', 'tw'), t = mk('table'), th = mk('thead'), trh = mk('tr');
+  heads.forEach(function(h){ var c = mk('th', h.l ? 'l' : '', h.t); trh.appendChild(c); });
+  th.appendChild(trh); t.appendChild(th);
+  var tb = mk('tbody');
+  rows.concat(totalRow ? [totalRow] : []).forEach(function(r, i){
+    var tr = mk('tr', totalRow && i === rows.length ? 'tot' : '');
+    r.forEach(function(v, j){ tr.appendChild(mk('td', heads[j].l ? 'l' : '', v)); });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb); w.appendChild(t);
+  return w;
 }
-function montarSelectUsinaAtiva(){
-  var sel = $('usinaAtiva');
-  sel.textContent = '';
-  USINAS.forEach(function(u){ var o = mk('option', '', u.nome); o.value = u.id; sel.appendChild(o); });
+function renderResumo(){
+  var box = $('resumo');
+  box.textContent = '';
+  var ls = tocadas();
+  if(!ls.length){
+    box.appendChild(mk('p', 'empty', 'Nenhum lançamento preenchido ainda. Preencha na aba Lançamentos e o avanço aparece aqui automaticamente.'));
+    return;
+  }
+  var rs = linhas(ls), aplic = rs.length ? (rs[rs.length - 1].acum || 0) : 0;
+  rs.forEach(function(r){ if(r.acum != null) aplic = r.acum; });
+  var total = totalUsina();
+
+  var cards = mk('div', 'cards');
+  [['Caixas', String(caixas(ls).length)], ['Aplicado', fmt(aplic, 2) + ' t'], [total > 0 ? 'Saldo usinas' : 'Massa usinas', total > 0 ? fmt(total - aplic, 2) + ' t' : '-']].forEach(function(c){
+    var d = mk('div', 'cs'); d.appendChild(mk('div', 'k', c[0])); d.appendChild(mk('div', 'v', c[1])); cards.appendChild(d);
+  });
+  box.appendChild(cards);
+
+  box.appendChild(mk('h3', 'sub-h', 'Avanço por faixa e sentido'));
+  grupos(ls).forEach(function(g){
+    var d = mk('div', 'grp');
+    d.appendChild(mk('h3', '', rotuloGrupo(g)));
+    var meta = g.n + (g.n === 1 ? ' caixa' : ' caixas') + ' · ' + fmt(g.t, 3) + ' t';
+    if(g.min != null) meta += ' · km ' + fmt(g.min, 3) + (g.max !== g.min ? ' a ' + fmt(g.max, 3) : '');
+    if(g.usinas.length) meta += ' · ' + g.usinas.join(', ');
+    d.appendChild(mk('div', 'meta', meta));
+    if(g.min != null && g.max > g.min){
+      var st = mk('div', 'strip'), span = g.max - g.min;
+      g.itens.forEach(function(r){
+        var a = r.a, b = r.b;
+        if(a == null || b == null) return;
+        var lo = Math.min(a, b), hi = Math.max(a, b);
+        var seg = mk('i');
+        seg.style.left = ((lo - g.min) / span * 100) + '%';
+        seg.style.width = ((hi - lo) / span * 100) + '%';
+        st.appendChild(seg);
+      });
+      d.appendChild(st);
+      var lb = mk('div', 'strip-l'); lb.appendChild(mk('span', '', fmt(g.min, 3))); lb.appendChild(mk('span', '', fmt(g.max, 3)));
+      d.appendChild(lb);
+    }
+    box.appendChild(d);
+  });
+
+  box.appendChild(mk('h3', 'sub-h', 'Caixas lançadas'));
+  var cxs = caixas(ls);
+  var heads = [{t:'Caixa',l:1},{t:'Est. inicial'},{t:'Est. final'},{t:'Compr. (m)'},{t:'Larg. (m)'},{t:'Esp. (m)'},{t:'Faixa',l:1},{t:'Sentido',l:1},{t:'Usina',l:1},{t:'Dens.'},{t:'Tonelada'},{t:'Acumulado'}];
+  var rows = cxs.map(function(c){
+    return [c.rotulo, fmt(c.ei, 3) || '-', fmt(c.ef, 3) || '-', fmt(c.comp, 2) || '-', fmt(c.larg, 2) || '-', fmt(c.esp, 3) || '-',
+      c.faixa || '-', c.sentido || '-', c.usinas.join(', ') || '-', fmt(c.dens, 3) || '-',
+      c.t == null ? '-' : fmt(c.t, 3), c.acum == null ? '-' : fmt(c.acum, 3)];
+  });
+  box.appendChild(tabelaEl(heads, rows, ['', '', '', '', '', '', '', '', '', 'Total', fmt(aplic, 3), fmt(aplic, 3)]));
+
+  box.appendChild(mk('h3', 'sub-h', 'Por usina'));
+  var pu = porUsina(ls);
+  box.appendChild(tabelaEl([{t:'Usina',l:1},{t:'Caixas'},{t:'Aplicado (t)'},{t:'Saída da usina (t)'},{t:'Diferença (t)'}],
+    pu.map(function(o){
+      return [o.nome, String(o.n), fmt(o.t, 2), o.massa == null ? '-' : fmt(o.massa, 2), o.massa == null ? '-' : fmt(o.massa - o.t, 2)];
+    }),
+    ['Total', String(caixas(ls).length), fmt(aplic, 2), total > 0 ? fmt(total, 2) : '-', total > 0 ? fmt(total - aplic, 2) : '-']));
 }
+
+/* ---------- abas ---------- */
+function aba(n){
+  ['L', 'R', 'C'].forEach(function(k){
+    $('pg' + k).hidden = k !== n;
+    $('tab' + k).setAttribute('aria-selected', String(k === n));
+  });
+  if(n === 'R') renderResumo();
+  window.scrollTo(0, 0);
+}
+$('tabL').addEventListener('click', function(){ aba('L'); });
+$('tabR').addEventListener('click', function(){ aba('R'); });
+$('tabC').addEventListener('click', function(){ aba('C'); });
+
+/* ---------- cadastros: equipes e usinas ---------- */
+function armar(btn, fn){
+  var t = null;
+  btn.addEventListener('click', function(){
+    if(!btn.dataset.arm){
+      btn.dataset.arm = '1'; btn.textContent = 'Toque de novo';
+      clearTimeout(t); t = setTimeout(function(){ btn.dataset.arm = ''; btn.textContent = 'Remover'; }, 3500);
+      return;
+    }
+    clearTimeout(t); fn();
+  });
+}
+function cadMudou(){
+  montarSelectEquipe(); montarUsinas(); renderList(); refresh(); agendarSalvar();
+}
+function renderReg(){
+  var eb = $('regEq'); eb.textContent = '';
+  equipes().forEach(function(n){
+    var row = mk('div', 'reg-row eq');
+    row.appendChild(mk('span', 'nm', n));
+    if(EQ_BASE.indexOf(n) < 0){
+      var b = mk('button', 'link-danger', 'Remover'); b.type = 'button';
+      armar(b, function(){ eqCustom = eqCustom.filter(function(x){ return x !== n; }); gravarReg(EQ_KEY, eqCustom); renderReg(); cadMudou(); });
+      row.appendChild(b);
+    }else row.appendChild(mk('span', 'hint info', 'padrão'));
+    eb.appendChild(row);
+  });
+  var add = mk('div', 'reg-add eq');
+  var ni = mk('input'); ni.type = 'text'; ni.placeholder = 'Nova equipe, ex.: Fresa 3'; ni.autocomplete = 'off';
+  var nb = mk('button', 'btn-add', '+ Adicionar equipe'); nb.type = 'button';
+  var eh = mk('p', 'hint');
+  nb.addEventListener('click', function(){
+    var n = ni.value.trim().replace(/\s+/g, ' ');
+    if(!n){ eh.textContent = 'Digite o nome da equipe.'; return; }
+    if(equipes().some(function(x){ return x.toLowerCase() === n.toLowerCase(); })){ eh.textContent = 'Essa equipe já existe.'; return; }
+    eqCustom.push(n); gravarReg(EQ_KEY, eqCustom); renderReg(); cadMudou();
+  });
+  add.appendChild(ni); add.appendChild(nb); add.appendChild(eh);
+  eb.appendChild(add);
+
+  var ub = $('regUs'); ub.textContent = '';
+  USINAS.forEach(function(u){
+    var row = mk('div', 'reg-row');
+    row.appendChild(mk('span', 'nm', u.nome));
+    var di = mk('input'); di.type = 'text'; di.inputMode = 'decimal'; di.autocomplete = 'off'; di.placeholder = 'dens. t/m³'; di.value = u.dens || '';
+    di.setAttribute('aria-label', 'Densidade padrão de ' + u.nome);
+    di.addEventListener('input', function(){
+      var c = di.value.replace(/[^0-9.,]/g, ''); if(c !== di.value) di.value = c;
+      u.dens = c; gravarReg(US_KEY, USINAS); refresh();
+    });
+    row.appendChild(di);
+    if(!u.fixo){
+      var b = mk('button', 'link-danger', 'Remover'); b.type = 'button';
+      armar(b, function(){
+        USINAS = USINAS.filter(function(x){ return x.id !== u.id; });
+        state.loads.forEach(function(l){ if(l.usina === u.id) l.usina = ''; });
+        delete state.usina[u.id];
+        gravarReg(US_KEY, USINAS); renderReg(); cadMudou();
+      });
+      row.appendChild(b);
+    }else row.appendChild(mk('span', 'hint info', 'padrão'));
+    ub.appendChild(row);
+  });
+  var ua = mk('div', 'reg-add');
+  var un = mk('input'); un.type = 'text'; un.placeholder = 'Nova usina'; un.autocomplete = 'off';
+  var ud = mk('input'); ud.type = 'text'; ud.inputMode = 'decimal'; ud.placeholder = 'dens. t/m³'; ud.autocomplete = 'off';
+  ud.addEventListener('input', function(){ var c = ud.value.replace(/[^0-9.,]/g, ''); if(c !== ud.value) ud.value = c; });
+  var ubtn = mk('button', 'btn-add', '+ Adicionar usina'); ubtn.type = 'button';
+  var uh = mk('p', 'hint'); uh.style.gridColumn = '1 / -1';
+  ubtn.addEventListener('click', function(){
+    var n = un.value.trim().replace(/\s+/g, ' ');
+    if(!n){ uh.textContent = 'Digite o nome da usina.'; return; }
+    if(USINAS.some(function(x){ return x.nome.toLowerCase() === n.toLowerCase(); })){ uh.textContent = 'Essa usina já existe.'; return; }
+    if(ud.value && num(ud.value) == null){ uh.textContent = 'Densidade inválida.'; return; }
+    USINAS.push({id:'u' + Date.now().toString(36), nome:n, dens:ud.value, fixo:false});
+    gravarReg(US_KEY, USINAS); renderReg(); cadMudou();
+  });
+  ua.appendChild(un); ua.appendChild(ud); ua.appendChild(ubtn); ua.appendChild(uh);
+  ub.appendChild(ua);
+}
+
+/* ---------- cabeçalho e usinas ---------- */
 function montarCabecalho(){
   var sel = $('rodovia');
   var o0 = mk('option', '', 'Selecione'); o0.value = '';
   sel.appendChild(o0);
   RODOVIAS.forEach(function(r){ var o = mk('option', '', r); o.value = r; sel.appendChild(o); });
-  montarSelectEquipe();
-  montarSelectUsinaAtiva();
   syncCabecalho();
-  [['equipe','equipeId','change'], ['data','data','input'], ['resp','resp','input'], ['rodovia','rodovia','change'], ['usinaAtiva', null, 'change']].forEach(function(b){
-    $(b[0]).addEventListener(b[2], function(){
-      if(b[0] === 'usinaAtiva'){ state.usinaAtiva = $('usinaAtiva').value; }
-      else { state.h[b[1]] = $(b[0]).value; }
-      agendarSalvar();
-    });
-  });
-  $('equipeAdd').addEventListener('click', function(){
-    var nome = ($('equipeNovo').value || '').trim();
-    if(!nome) return;
-    var e = {id:uid(), nome:nome};
-    EQUIPES.push(e); salvarReg(EQUIPES_KEY, EQUIPES);
-    montarSelectEquipe();
-    state.h.equipeId = e.id; syncCabecalho(); agendarSalvar();
-    $('equipeNovo').value = '';
-  });
-  $('usinaAdd').addEventListener('click', function(){
-    var nome = ($('usinaNovo').value || '').trim();
-    if(!nome) return;
-    var u = {id:uid(), nome:nome, dens:''};
-    USINAS.push(u); salvarReg(USINAS_KEY, USINAS);
-    state.usina[u.id] = '';
-    montarSelectUsinaAtiva(); montarUsinas(); syncCabecalho(); changed();
-    $('usinaNovo').value = '';
-  });
-  [['segEpi','epi'], ['segRes','residuos']].forEach(function(p){
-    var seg = $(p[0]);
-    Array.prototype.forEach.call(seg.children, function(b){
-      b.addEventListener('click', function(){
-        state.h[p[1]] = b.dataset.v;
-        Array.prototype.forEach.call(seg.children, function(x){ x.setAttribute('aria-checked', String(x === b)); });
-        agendarSalvar();
-      });
-    });
+  [['equipe','equipe','change'], ['data','data','input'], ['resp','resp','input'], ['rodovia','rodovia','change']].forEach(function(b){
+    $(b[0]).addEventListener(b[2], function(){ state.h[b[1]] = $(b[0]).value; agendarSalvar(); });
   });
 }
+function montarSelectEquipe(){
+  var sel = $('equipe'), lista = equipes().slice();
+  if(!state.h.equipe) state.h.equipe = lista[0];
+  if(lista.indexOf(state.h.equipe) < 0) lista.push(state.h.equipe);      // equipe de rascunho antigo ou removida
+  sel.textContent = '';
+  lista.forEach(function(n){ var o = mk('option', '', n); o.value = n; sel.appendChild(o); });
+  sel.value = state.h.equipe;
+}
 function syncCabecalho(){
-  $('equipe').value = state.h.equipeId || '';
+  montarSelectEquipe();
   $('data').value = state.h.data || '';
   $('rodovia').value = state.h.rodovia || '';
   $('resp').value = state.h.resp || '';
-  $('usinaAtiva').value = state.usinaAtiva || '';
-  [['segEpi','epi'], ['segRes','residuos']].forEach(function(p){
-    var seg = $(p[0]);
-    Array.prototype.forEach.call(seg.children, function(b){ b.setAttribute('aria-checked', String(b.dataset.v === state.h[p[1]])); });
-  });
 }
-function nomeEquipe(){ var e = EQUIPES.filter(function(x){ return x.id === state.h.equipeId; })[0]; return e ? e.nome : ''; }
-function nomeUsinaAtiva(){ var u = USINAS.filter(function(x){ return x.id === state.usinaAtiva; })[0]; return u ? u.nome : ''; }
-function densUsinaAtiva(){ var u = USINAS.filter(function(x){ return x.id === state.usinaAtiva; })[0]; return u ? (u.dens || '') : ''; }
-
 function montarUsinas(){
   var box = $('usinas');
   box.textContent = '';
@@ -832,162 +967,8 @@ function montarUsinas(){
     w.appendChild(i); w.appendChild(mk('span', '', 't'));
     row.appendChild(w);
     box.appendChild(row);
-
-    var densRow = mk('div', 'usina-dens');
-    densRow.appendChild(mk('span', '', 'Densidade padrão (t/m³) dessa usina'));
-    var di = mk('input');
-    di.type = 'text'; di.inputMode = 'decimal'; di.autocomplete = 'off'; di.placeholder = '2,420';
-    di.value = u.dens || '';
-    di.addEventListener('input', function(){
-      var c = di.value.replace(/[^0-9.,]/g, '');
-      if(c !== di.value) di.value = c;
-      u.dens = c; salvarReg(USINAS_KEY, USINAS);
-    });
-    densRow.appendChild(di);
-    box.appendChild(densRow);
   });
 }
-
-/* ---------- clima e praticabilidade ---------- */
-function montarClima(){
-  var box = $('clima');
-  box.textContent = '';
-  PERIODOS.forEach(function(p){
-    var c = state.clima[p.id];
-    var card = mk('div', 'period');
-    card.appendChild(mk('h3', '', p.nome));
-    var g = mk('div', 'grid');
-
-    var segT = mk('div', 'seg seg3');
-    segT.setAttribute('role', 'radiogroup');
-    TEMPOS.forEach(function(t){
-      var b = mk('button', '', t);
-      b.type = 'button'; b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', String(c.tempo === t));
-      b.addEventListener('click', function(){
-        c.tempo = t;
-        Array.prototype.forEach.call(segT.children, function(x){ x.setAttribute('aria-checked', String(x === b)); });
-        agendarSalvar();
-      });
-      segT.appendChild(b);
-    });
-    var wT = mk('div', 'f full'); wT.appendChild(mk('span', 'lbl', 'Tempo')); wT.appendChild(segT);
-    g.appendChild(wT);
-
-    var iPluv = mk('input'); iPluv.type = 'text'; iPluv.inputMode = 'decimal'; iPluv.autocomplete = 'off'; iPluv.placeholder = '0,0';
-    iPluv.value = c.pluv || '';
-    iPluv.addEventListener('input', function(){
-      var v = iPluv.value.replace(/[^0-9.,]/g, ''); if(v !== iPluv.value) iPluv.value = v;
-      c.pluv = v; agendarSalvar();
-    });
-    var wP = mk('label', 'f'); wP.appendChild(mk('span', 'lbl', 'Pluviometria (mm)')); wP.appendChild(iPluv);
-    g.appendChild(wP);
-
-    var iTemp = mk('input'); iTemp.type = 'text'; iTemp.inputMode = 'decimal'; iTemp.autocomplete = 'off'; iTemp.placeholder = '0,0';
-    iTemp.value = c.temp || '';
-    iTemp.addEventListener('input', function(){
-      var v = iTemp.value.replace(/[^0-9.,]/g, ''); if(v !== iTemp.value) iTemp.value = v;
-      c.temp = v; agendarSalvar();
-    });
-    var wTe = mk('label', 'f'); wTe.appendChild(mk('span', 'lbl', 'Temperatura (°C)')); wTe.appendChild(iTemp);
-    g.appendChild(wTe);
-
-    var segP = mk('div', 'seg');
-    segP.setAttribute('role', 'radiogroup');
-    var obsW = mk('label', 'f full'); obsW.appendChild(mk('span', 'lbl', 'Motivo (se impraticável)'));
-    var taObs = mk('textarea'); taObs.rows = 2; taObs.value = c.obs || '';
-    taObs.addEventListener('input', function(){ c.obs = taObs.value; agendarSalvar(); });
-    obsW.appendChild(taObs); obsW.hidden = c.prat !== 'Impraticável';
-    ['Produtivo', 'Impraticável'].forEach(function(v){
-      var b = mk('button', '', v);
-      b.type = 'button'; b.setAttribute('role', 'radio');
-      b.setAttribute('aria-checked', String(c.prat === v));
-      b.addEventListener('click', function(){
-        c.prat = v;
-        Array.prototype.forEach.call(segP.children, function(x){ x.setAttribute('aria-checked', String(x === b)); });
-        obsW.hidden = v !== 'Impraticável';
-        agendarSalvar();
-      });
-      segP.appendChild(b);
-    });
-    var wPr = mk('div', 'f full'); wPr.appendChild(mk('span', 'lbl', 'Praticabilidade')); wPr.appendChild(segP);
-    g.appendChild(wPr);
-    g.appendChild(obsW);
-
-    card.appendChild(g);
-    box.appendChild(card);
-  });
-}
-
-/* ---------- horários gerais e por etapa ---------- */
-function montarEtapas(){
-  $('horIni').value = state.hor.geralIni || '';
-  $('horFim').value = state.hor.geralFim || '';
-  $('horIni').oninput = function(){ state.hor.geralIni = $('horIni').value; agendarSalvar(); };
-  $('horFim').oninput = function(){ state.hor.geralFim = $('horFim').value; agendarSalvar(); };
-
-  var box = $('etapas');
-  box.textContent = '';
-  ETAPAS.forEach(function(et){
-    var e = state.etapas[et.id];
-    var card = mk('div', 'etapa');
-    card.appendChild(mk('h3', '', et.nome));
-    var g = mk('div', 'grid');
-
-    var iIni = mk('input'); iIni.type = 'time'; iIni.value = e.ini || '';
-    iIni.addEventListener('input', function(){ e.ini = iIni.value; agendarSalvar(); });
-    var wIni = mk('label', 'f'); wIni.appendChild(mk('span', 'lbl', 'Horário inicial')); wIni.appendChild(iIni);
-    g.appendChild(wIni);
-
-    var iFim = mk('input'); iFim.type = 'time'; iFim.value = e.fim || '';
-    iFim.addEventListener('input', function(){ e.fim = iFim.value; agendarSalvar(); });
-    var wFim = mk('label', 'f'); wFim.appendChild(mk('span', 'lbl', 'Horário final')); wFim.appendChild(iFim);
-    g.appendChild(wFim);
-
-    var taObs = mk('textarea'); taObs.rows = 2; taObs.value = e.obs || '';
-    taObs.addEventListener('input', function(){ e.obs = taObs.value; agendarSalvar(); });
-    var wObs = mk('label', 'f full'); wObs.appendChild(mk('span', 'lbl', 'Causa do atraso (se houver)')); wObs.appendChild(taObs);
-    g.appendChild(wObs);
-
-    card.appendChild(g);
-    box.appendChild(card);
-  });
-}
-
-/* ---------- mão de obra e equipamentos (listas com quantidade) ---------- */
-function montarQtyList(boxId, arr){
-  var box = $(boxId);
-  box.textContent = '';
-  arr.forEach(function(it){
-    var row = mk('div', 'qty-row');
-    row.appendChild(mk('span', 'name', it.nome));
-    var i = mk('input');
-    i.type = 'text'; i.inputMode = 'numeric'; i.autocomplete = 'off'; i.placeholder = '0';
-    i.value = it.qtd || '';
-    i.addEventListener('input', function(){
-      var v = i.value.replace(/[^0-9]/g, ''); if(v !== i.value) i.value = v;
-      it.qtd = v; agendarSalvar();
-    });
-    row.appendChild(i);
-    box.appendChild(row);
-  });
-}
-function montarMaoDeObra(){ montarQtyList('maoDeObra', state.mo); }
-function montarEquipamentos(){ montarQtyList('equipamentos', state.eq); }
-$('moAdd').addEventListener('click', function(){
-  var nome = ($('moNovo').value || '').trim();
-  if(!nome) return;
-  state.mo.push({nome:nome, qtd:''});
-  montarMaoDeObra(); agendarSalvar();
-  $('moNovo').value = '';
-});
-$('eqAdd').addEventListener('click', function(){
-  var nome = ($('eqNovo').value || '').trim();
-  if(!nome) return;
-  state.eq.push({nome:nome, qtd:''});
-  montarEquipamentos(); agendarSalvar();
-  $('eqNovo').value = '';
-});
 
 /* ---------- ações ---------- */
 $('add').addEventListener('click', function(){
@@ -1012,16 +993,11 @@ $('reset').addEventListener('click', function(){
   }
   clearTimeout(resetArm);
   b.dataset.arm = ''; b.textContent = 'Limpar tudo e começar novo dia';
-  var novo = novoEstado();
-  state.loads = [novaCarga(null, state.usinaAtiva)];
-  state.usina = {}; USINAS.forEach(function(u){ state.usina[u.id] = ''; });
-  state.clima = climaVazio();
-  state.hor = {geralIni:'', geralFim:''};
-  state.etapas = etapasVazio();
-  state.mo = novo.mo; state.eq = novo.eq;
-  state.h.data = hoje(); state.h.epi = ''; state.h.residuos = '';
+  state.loads = [novaCarga(null)];
+  state.usina = {};
+  state.h.data = hoje();
   tentou = false;
-  msgOff(); syncCabecalho(); montarUsinas(); montarClima(); montarEtapas(); montarMaoDeObra(); montarEquipamentos(); renderList(); refresh(); salvar();
+  msgOff(); syncCabecalho(); montarUsinas(); renderList(); refresh(); salvar();
   window.scrollTo(0, 0);
 });
 
@@ -1048,7 +1024,7 @@ function tentarGerar(forcar, tipo){
   if(probs.length && !forcar){
     var n = probs.length;
     msg(n + (n === 1 ? ' lançamento está' : ' lançamentos estão') + ' com dados faltando (marcados em vermelho).', 'warn', [
-      {label:'Corrigir', fn:function(){ msgOff(); irParaPrimeiroProblema(probs); }},
+      {label:'Corrigir', fn:function(){ msgOff(); aba('L'); irParaPrimeiroProblema(probs); }},
       {label:'Gerar assim mesmo', fn:function(){ tentarGerar(true, tipo); }}
     ]);
     return;
@@ -1068,7 +1044,7 @@ function getDl(){
 }
 
 function nomeArquivo(ext){
-  var eq = (nomeEquipe() || 'Equipe').trim()
+  var eq = (state.h.equipe || 'Equipe').trim()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Equipe';
   var d = (state.h.data || hoje()).split('-');
@@ -1156,23 +1132,23 @@ async function montarPdf(loads){
   function stroke(c){ doc.setDrawColor(c[0], c[1], c[2]); }
 
   var cols = [
+    {t:'Caixa',         w:12, a:'l'},
     {t:'Placa',         w:20, a:'l'},
-    {t:'Ticket',        w:16, a:'l'},
-    {t:'Estaca inicial',w:21, a:'r'},
-    {t:'Estaca final',  w:21, a:'r'},
-    {t:'Sentido',       w:18, a:'l'},
-    {t:'Faixa',         w:10, a:'c'},
-    {t:'Compr. (m)',    w:17, a:'r'},
-    {t:'Larg. (m)',     w:15, a:'r'},
-    {t:'Espess. (m)',   w:16, a:'r'},
-    {t:'Dens. (t/m3)',  w:18, a:'r', sup:true},
+    {t:'Estaca inicial',w:20, a:'r'},
+    {t:'Estaca final',  w:20, a:'r'},
+    {t:'Compr. (m)',    w:15, a:'r'},
+    {t:'Larg.(m)',      w:13, a:'r'},
+    {t:'Esp. (m)',      w:14, a:'r'},
+    {t:'Faixa',         w:11, a:'c'},
+    {t:'Sentido',       w:21, a:'l'},
+    {t:'Usina',         w:24, a:'l'},
+    {t:'Dens. (t/m3)',  w:17, a:'r', sup:true},
     {t:'Tonelada',      w:18, a:'r'},
-    {t:'Ton. acum.',    w:19, a:'r'},
-    {t:'Caixa',         w:14, a:'l'},
-    {t:'Observação',    w:54, a:'l'}
+    {t:'Ton. acum.',    w:20, a:'r'},
+    {t:'Observação',    w:52, a:'l'}
   ];
   var OBS_W = cols[13].w;
-  var TON_X = M; for(var k = 0; k < 10; k++) TON_X += cols[k].w;
+  var TON_X = M; for(var k = 0; k < 12; k++) TON_X += cols[k].w;
 
   function celula(s, x, w, y, a){
     if(a === 'r') doc.text(s, x + w - PAD, y, {align:'right'});
@@ -1194,7 +1170,7 @@ async function montarPdf(loads){
     fill(YEL);  doc.rect(0, 10, W, 1, 'F');
     ink([255,255,255]);
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-    doc.text('Rastreio de massa - ' + (nomeEquipe() || '') + ' - ' + fmtData(state.h.data), M, 6.6);
+    doc.text('Rastreio de massa - ' + (state.h.equipe || '') + ' - ' + fmtData(state.h.data), M, 6.6);
     return 18;
   }
   function cabTabela(y){
@@ -1223,7 +1199,7 @@ async function montarPdf(loads){
   var y = topo(true);
 
   // Identificação
-  var info = [['Equipe', nomeEquipe()], ['Data', fmtData(state.h.data)], ['Rodovia', state.h.rodovia], ['Encarregado', state.h.resp]];
+  var info = [['Equipe', state.h.equipe], ['Data', fmtData(state.h.data)], ['Rodovia', state.h.rodovia], ['Responsável', state.h.resp]];
   info.forEach(function(p, i){
     var x = M + i * (TW / 4);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); ink(GRAY); doc.text(p[0], x, y);
@@ -1239,9 +1215,10 @@ async function montarPdf(loads){
   ls.forEach(function(r, i){
     var l = r.l;
     var vals = [
-      l.placa || '', l.ticket || '', fmt(num(l.ei), 3), fmt(r.c.ef, 3), l.sentido || '', l.faixa || '',
-      fmt(num(l.comp), 2), fmt(num(l.larg), 2), fmt(num(l.esp), 3), fmt(num(l.dens), 3),
-      fmt(r.c.t, 3), fmt(r.acum, 3), l.caixa || ''
+      l.caixa || '', l.placa || '', fmt(num(l.ei), 3), fmt(r.c.ef, 3),
+      fmt(num(l.comp), 2), fmt(num(l.larg), 2), fmt(num(l.esp), 3),
+      l.faixa || '', l.sentido || '', nomeUsina(l.usina), fmt(num(l.dens), 3),
+      fmt(r.c.t, 3), fmt(r.acum, 3)
     ];
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
     var obsL = [];
@@ -1273,138 +1250,57 @@ async function montarPdf(loads){
   stroke(LINE); doc.rect(M, y, TW, 8, 'S');
   ink(INK); doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
   doc.text('Total aplicado', M + PAD, y + 5.4);
-  doc.text(fmt(aplicado, 3), TON_X + cols[10].w - PAD, y + 5.4, {align:'right'});
+  doc.text(fmt(aplicado, 3), TON_X + cols[11].w - PAD, y + 5.4, {align:'right'});
   y += 8 + 10;
 
-  // Usinas e saldo
-  if(y + 30 > H - 14){ y = novaPagina(); }
-  var total = totalUsina(), sobra = total - aplicado;
-
-  var uw1 = 52, uw2 = 30;
-  fill(NAVY); doc.rect(M, y, uw1 + uw2, 7, 'F');
-  ink([255,255,255]); doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
-  doc.text('Usina', M + PAD, y + 4.8);
-  doc.text('Ton', M + uw1 + uw2 - PAD, y + 4.8, {align:'right'});
-  var uy = y + 7;
-  USINAS.forEach(function(u){
-    stroke(LINE); doc.setLineWidth(0.15);
-    doc.rect(M, uy, uw1, 7, 'S'); doc.rect(M + uw1, uy, uw2, 7, 'S');
-    ink(INK); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.text(u.nome, M + PAD, uy + 4.8);
-    doc.text(fmt(num(state.usina[u.id]), 2), M + uw1 + uw2 - PAD, uy + 4.8, {align:'right'});
-    uy += 7;
-  });
-
-  var rx = M + 130, rw1 = 40, rw2 = 32, ry = y;
-  [['Total usina', total, false], ['Aplicado', aplicado, false], ['Sobra', sobra, true]].forEach(function(p){
-    fill(LBL); doc.rect(rx, ry, rw1, 7, 'F');
-    stroke(LINE); doc.setLineWidth(0.15);
-    doc.rect(rx, ry, rw1, 7, 'S'); doc.rect(rx + rw1, ry, rw2, 7, 'S');
-    ink(INK); doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-    doc.text(p[0], rx + PAD, ry + 4.8);
-    if(p[2] && total > 0 && p[1] < -0.0005) ink(RED);
-    doc.text(total > 0 || !p[2] ? fmt(p[1], 2) : '', rx + rw1 + rw2 - PAD, ry + 4.8, {align:'right'});
-    ry += 7;
-  });
-
-  // Página RDO: verificações, clima, horários e efetivo
-  y = novaPagina();
-  function tituloSec(titulo, yy){
-    fill(NAVY); doc.rect(M, yy, TW, 7, 'F');
-    ink([255,255,255]); doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-    doc.text(titulo, M + PAD, yy + 4.9);
-    return yy + 7;
-  }
-  function checaQuebra(alt){ if(y + alt > H - 16){ y = novaPagina(); } }
-
-  y = tituloSec('RDO - Verificações do dia', y);
-  stroke(LINE); doc.setLineWidth(0.15); doc.rect(M, y, TW, 7, 'S');
-  ink(INK); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-  doc.text('EPIs utilizados pela equipe: ' + (state.h.epi === 'sim' ? 'Sim' : state.h.epi === 'nao' ? 'Não' : '-'), M + PAD, y + 4.8);
-  doc.text('Resíduos recolhidos: ' + (state.h.residuos === 'sim' ? 'Sim' : state.h.residuos === 'nao' ? 'Não' : '-'), M + TW / 2 + PAD, y + 4.8);
-  y += 7 + 7;
-
-  checaQuebra(30);
-  y = tituloSec('Clima e praticabilidade', y);
-  var climaCols = [
-    {t:'Período', w:26, a:'l'}, {t:'Tempo', w:32, a:'l'}, {t:'Pluv. (mm)', w:28, a:'r'},
-    {t:'Temp. (°C)', w:28, a:'r'}, {t:'Praticabilidade', w:40, a:'l'}, {t:'Observação', w:123, a:'l'}
-  ];
-  fill(LBL); doc.rect(M, y, TW, 6.5, 'F'); stroke(LINE); doc.rect(M, y, TW, 6.5, 'S');
-  ink(INK); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-  (function(){ var xx = M; climaCols.forEach(function(c){ celula(c.t, xx, c.w, y + 4.5, c.a); xx += c.w; }); })();
-  y += 6.5;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  PERIODOS.forEach(function(p, i){
-    var c = state.clima[p.id], rh = 6.5;
-    if(i % 2){ fill(ZEB); doc.rect(M, y, TW, rh, 'F'); }
-    stroke(LINE); doc.rect(M, y, TW, rh, 'S');
-    var vals = [p.nome, c.tempo || '-', c.pluv ? fmt(num(c.pluv), 1) : '-', c.temp ? fmt(num(c.temp), 1) : '-', c.prat || '-', c.obs || ''];
-    var xx2 = M;
-    climaCols.forEach(function(cc, j){ celula(vals[j], xx2, cc.w, y + 4.5, cc.a); xx2 += cc.w; });
-    y += rh;
-  });
-  y += 7;
-
-  checaQuebra(42);
-  y = tituloSec('Horários das atividades', y);
-  var horCols = [{t:'Atividade', w:65, a:'l'}, {t:'Início', w:30, a:'c'}, {t:'Término', w:30, a:'c'}, {t:'Causa do atraso / observação', w:152, a:'l'}];
-  fill(LBL); doc.rect(M, y, TW, 6.5, 'F'); stroke(LINE); doc.rect(M, y, TW, 6.5, 'S');
-  ink(INK); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-  (function(){ var xx = M; horCols.forEach(function(c){ celula(c.t, xx, c.w, y + 4.5, c.a); xx += c.w; }); })();
-  y += 6.5;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  var horLinhas = [['Geral (dia todo)', state.hor.geralIni, state.hor.geralFim, '']];
-  ETAPAS.forEach(function(e){ var d = state.etapas[e.id]; horLinhas.push([e.nome, d.ini, d.fim, d.obs || '']); });
-  horLinhas.forEach(function(ln, i){
-    var rh = 6.5;
-    if(i % 2){ fill(ZEB); doc.rect(M, y, TW, rh, 'F'); }
-    stroke(LINE); doc.rect(M, y, TW, rh, 'S');
-    var vals = [ln[0], ln[1] || '-', ln[2] || '-', ln[3] || ''];
-    var xx2 = M;
-    horCols.forEach(function(cc, j){ celula(vals[j], xx2, cc.w, y + 4.5, cc.a); xx2 += cc.w; });
-    y += rh;
-  });
-  y += 7;
-
-  checaQuebra(50);
-  y = tituloSec('Usina do dia', y);
-  stroke(LINE); doc.rect(M, y, TW, 7, 'S');
-  ink(INK); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-  doc.text('Usina: ' + (nomeUsinaAtiva() || '-'), M + PAD, y + 4.8);
-  doc.text('Densidade padrão: ' + (densUsinaAtiva() ? fmt(num(densUsinaAtiva()), 3) + ' t/m³' : '-'), M + TW / 2 + PAD, y + 4.8);
-  y += 7 + 7;
-
-  function tabelaQtd(titulo, itens, x0, w0, yTop){
-    var yy = tituloSec(titulo, yTop);
-    var preenchidos = itens.filter(function(it){ return num(it.qtd) != null && num(it.qtd) > 0; });
-    if(!preenchidos.length){
-      stroke(LINE); doc.setLineWidth(0.15); doc.rect(x0, yy, w0, 7, 'S');
-      ink(GRAY); doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-      doc.text('Nenhum item informado', x0 + PAD, yy + 4.8);
-      return yy + 7;
+  // Tabelas de resumo
+  function tabPdf(titulo, heads, ws, al, rows, totalRow){
+    var tw = ws.reduce(function(a, b){ return a + b; }, 0);
+    if(y + 6 + 7 * 3 > H - 14) y = novaPagina();
+    ink(INK); doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
+    doc.text(titulo, M, y + 3); y += 6;
+    function cab(){
+      fill(NAVY); doc.rect(M, y, tw, 7, 'F');
+      ink([255,255,255]); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+      var x = M;
+      heads.forEach(function(h, i){ celula(h, x, ws[i], y + 4.8, al[i]); x += ws[i]; });
+      y += 7;
     }
-    var wNome = w0 - 24;
-    fill(LBL); doc.rect(x0, yy, w0, 6, 'F'); stroke(LINE); doc.rect(x0, yy, w0, 6, 'S');
-    ink(INK); doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
-    doc.text('Descrição', x0 + PAD, yy + 4.2);
-    doc.text('Qtd.', x0 + w0 - PAD, yy + 4.2, {align:'right'});
-    yy += 6;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    preenchidos.forEach(function(it, i){
-      var rh = 5.6;
-      if(i % 2){ fill(ZEB); doc.rect(x0, yy, w0, rh, 'F'); }
-      stroke(LINE); doc.rect(x0, yy, w0, rh, 'S');
-      celula(it.nome, x0, wNome, yy + 4, 'l');
-      celula(String(it.qtd), x0 + wNome, 24, yy + 4, 'r');
-      yy += rh;
+    cab();
+    rows.concat(totalRow ? [totalRow] : []).forEach(function(r, ri){
+      var tot = totalRow && ri === rows.length;
+      if(y + 7 > H - 14){ y = novaPagina(); cab(); }
+      if(tot){ fill(TOTF); doc.rect(M, y, tw, 7, 'F'); }
+      stroke(LINE); doc.setLineWidth(0.15); doc.rect(M, y, tw, 7, 'S');
+      ink(INK); doc.setFont('helvetica', tot ? 'bold' : 'normal'); doc.setFontSize(9);
+      var x = M;
+      r.forEach(function(v, i){
+        celula(v, x, ws[i], y + 4.8, al[i]);
+        if(i) doc.line(x, y, x, y + 7);
+        x += ws[i];
+      });
+      y += 7;
     });
-    return yy;
+    y += 8;
   }
-  checaQuebra(60);
-  var yMO = tabelaQtd('Mão de obra', state.mo, M, 135, y);
-  var yEQ = tabelaQtd('Equipamentos e veículos', state.eq, M + 142, 135, y);
-  y = Math.max(yMO, yEQ) + 4;
+
+  var gr = grupos(loads);
+  tabPdf('Avanço por faixa e sentido',
+    ['Estaca inicial', 'Estaca final', 'Faixa', 'Sentido', 'Usina(s)', 'Caixas', 'Tonelada'],
+    [28, 28, 18, 28, 70, 18, 32], ['r', 'r', 'c', 'l', 'l', 'r', 'r'],
+    gr.map(function(g){
+      return [fmt(g.min, 3) || '-', fmt(g.max, 3) || '-', g.faixa || '-', g.sentido || '-', doc.splitTextToSize(g.usinas.join(', ') || '-', 66)[0], String(g.n), fmt(g.t, 3)];
+    }),
+    ['', '', '', '', 'Total', String(caixas(loads).length), fmt(aplicado, 3)]);
+
+  var total = totalUsina(), sobra = total - aplicado, pu = porUsina(loads);
+  tabPdf('Massa por usina',
+    ['Usina', 'Caixas', 'Aplicado (t)', 'Saída da usina (t)', 'Diferença (t)'],
+    [60, 20, 36, 40, 36], ['l', 'r', 'r', 'r', 'r'],
+    pu.map(function(o){
+      return [o.nome, String(o.n), fmt(o.t, 2), o.massa == null ? '-' : fmt(o.massa, 2), o.massa == null ? '-' : fmt(o.massa - o.t, 2)];
+    }),
+    ['Total', String(caixas(loads).length), fmt(aplicado, 2), total > 0 ? fmt(total, 2) : '-', total > 0 ? fmt(sobra, 2) : '-']);
 
   // Rodapé em todas as páginas
   var n = doc.getNumberOfPages();
@@ -1450,45 +1346,46 @@ async function montarXlsx(loads){
     (rows[r] = rows[r] || {})[c] = x;
   }
 
-  var cab = ['Placa','Ticket','Estaca inicial','Estaca Final','Sentido','Faixa','Comprimento','Largura','Espessura','Densidade','Tonelada','Tonelada acumulada','Caixa','Observação'];
+  var cab = ['Caixa','Placa','Estaca inicial','Estaca Final','Comprimento','Largura','Espessura','Faixa','Sentido','Usina','Densidade','Tonelada','Tonelada acumulada','Observação'];
   cab.forEach(function(t, i){ put(2, i + 2, 1, t); });
 
   var acum = 0, somaK = 0;
   loads.forEach(function(l, i){
     var r = 3 + i;
-    var ei = num(l.ei), comp = num(l.comp), larg = num(l.larg), esp = num(l.esp), dens = num(l.dens);
-    var man = l.efm ? num(l.efm) : null;
+    var ei = num(l.ei), ef = num(l.ef), comp = num(l.comp), larg = num(l.larg), esp = num(l.esp), dens = num(l.dens);
     var kVazio = dens == null;
     var k = kVazio ? '' : (comp || 0) * (larg || 0) * (esp || 0) * dens;
     if(!kVazio){ somaK += k; acum += k; }
-    put(r, 2, 2, l.placa || null);
-    put(r, 3, 2, l.ticket || null);
+    var cx = l.caixa || '';
+    if(cx) put(r, 2, 2, cx); else put(r, 2, 2, null);
+    put(r, 3, 2, l.placa || null);
     put(r, 4, 3, ei);
-    if(man != null) put(r, 5, 3, man);
-    else put(r, 5, 3, ei == null ? '' : ei + (comp || 0) / 1000, 'IF(D' + r + '="","",D' + r + '+(H' + r + '/1000))');
-    put(r, 6, 2, l.sentido || null);
-    put(r, 7, 5, /^\d+$/.test(l.faixa || '') ? Number(l.faixa) : (l.faixa || null));
-    put(r, 8, 4, comp);
-    put(r, 9, 4, larg);
-    put(r, 10, 3, esp);
-    put(r, 11, 3, dens);
-    put(r, 12, 3, k, 'IF(K' + r + '="","",H' + r + '*I' + r + '*J' + r + '*K' + r + ')');
-    put(r, 13, 3, kVazio ? '' : acum, i === 0 ? 'IF(L' + r + '="","",L' + r + ')' : 'IF(L' + r + '="","",L' + r + '+N(M' + (r - 1) + '))');
-    put(r, 14, 2, l.caixa || null);
+    put(r, 5, 3, ef);
+    put(r, 6, 4, comp);
+    put(r, 7, 4, larg);
+    put(r, 8, 3, esp);
+    put(r, 9, 5, /^\d+$/.test(l.faixa || '') ? Number(l.faixa) : (l.faixa || null));
+    put(r, 10, 2, l.sentido || null);
+    put(r, 11, 2, nomeUsina(l.usina) || null);
+    put(r, 12, 3, dens);
+    put(r, 13, 3, k, 'IF(L' + r + '="","",F' + r + '*G' + r + '*H' + r + '*L' + r + ')');
+    put(r, 14, 3, kVazio ? '' : acum, i === 0 ? 'IF(M' + r + '="","",M' + r + ')' : 'IF(M' + r + '="","",M' + r + '+N(N' + (r - 1) + '))');
     put(r, 15, 6, l.obs || null);
   });
 
   var fim = 2 + loads.length, soma = fim + 1;
-  put(soma, 12, 7, somaK, 'SUM(L3:L' + fim + ')');
+  put(soma, 13, 7, somaK, 'SUM(M3:M' + fim + ')');
 
-  var u = soma + 2;
+  var u = soma + 2, nU = USINAS.length;
   var total = totalUsina();
-  put(u, 3, 9, 'Usina');                   put(u, 4, 10, 'Ton');
-  USINAS.forEach(function(us, i){ put(u + 1 + i, 3, 2, us.nome); put(u + 1 + i, 4, 4, num(state.usina[us.id])); });
-  var fimU = u + USINAS.length;
-  put(u, 6, 9, 'Total Usina');             put(u, 7, 8, total, 'SUM(D' + (u + 1) + ':D' + fimU + ')');
-  put(u + 1, 6, 9, 'Aplicado');            put(u + 1, 7, 8, somaK, 'L' + soma);
-  put(u + 2, 6, 9, 'Sobra');               put(u + 2, 7, 8, total - somaK, 'G' + u + '-G' + (u + 1));
+  put(u, 3, 9, 'Usina'); put(u, 4, 10, 'Ton');
+  USINAS.forEach(function(us, i){
+    put(u + 1 + i, 3, 2, us.nome);
+    put(u + 1 + i, 4, 4, num(state.usina[us.id]));
+  });
+  put(u, 6, 9, 'Total Usina');  put(u, 7, 8, total, 'SUM(D' + (u + 1) + ':D' + (u + nU) + ')');
+  put(u + 1, 6, 9, 'Aplicado'); put(u + 1, 7, 8, somaK, 'M' + soma);
+  put(u + 2, 6, 9, 'Sobra');    put(u + 2, 7, 8, total - somaK, 'G' + u + '-G' + (u + 1));
 
   function sheetData(mapa, alt){
     return '<sheetData>' + Object.keys(mapa).map(Number).sort(function(a, b){ return a - b; }).map(function(r){
@@ -1504,60 +1401,66 @@ async function montarXlsx(loads){
 
   var validacao = loads.length
     ? '<dataValidations count="2">' +
-        '<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="F3:F' + fim + '"><formula1>"Crescente,Decrescente"</formula1></dataValidation>' +
-        '<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="G3:G' + fim + '"><formula1>"' + xesc(FAIXAS.join(',')) + '"</formula1></dataValidation>' +
+        '<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="J3:J' + fim + '"><formula1>"Crescente,Decrescente"</formula1></dataValidation>' +
+        '<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="I3:I' + fim + '"><formula1>"' + xesc(FAIXAS.join(',')) + '"</formula1></dataValidation>' +
       '</dataValidations>'
     : '';
   var sheet1 = HEAD + '<worksheet ' + NS + '><sheetViews><sheetView workbookViewId="0"/></sheetViews>' +
-    '<sheetFormatPr defaultRowHeight="15"/>' + larguras([3.7, 12, 10, 12, 12, 12, 8, 10, 9, 9, 9, 10, 11, 10, 34]) +
+    '<sheetFormatPr defaultRowHeight="15"/>' + larguras([3.7, 9, 18, 14, 14, 13, 11, 11, 8, 13, 18, 11, 12, 19, 34]) +
     sheetData(rows, altura) + validacao + '<pageMargins left="0.5" right="0.5" top="0.75" bottom="0.75" header="0.3" footer="0.3"/></worksheet>';
 
   var idRows = {};
   var altId = {};
   var idMap = rows; rows = idRows;       // reutiliza put() para a segunda aba
-  [['Equipe', nomeEquipe()], ['Data', fmtData(state.h.data)], ['Rodovia', state.h.rodovia], ['Encarregado', state.h.resp]].forEach(function(p, i){
+  [['Equipe', state.h.equipe], ['Data', fmtData(state.h.data)], ['Rodovia', state.h.rodovia], ['Responsável', state.h.resp]].forEach(function(p, i){
     var r = i + 1;
     put(r, 1, 11, p[0]); put(r, 2, 12, p[1] || '');
   });
   var sheet2 = HEAD + '<worksheet ' + NS + '><sheetFormatPr defaultRowHeight="15"/>' + larguras([16, 34]) +
     sheetData(idRows, altId) + '</worksheet>';
-  rows = idMap;
-
-  /* ---- aba 3: RDO (verificações, clima, horários, efetivo) ---- */
-  var rdoRows = {}, altRdo = {};
-  rows = rdoRows;
-  put(1, 1, 11, 'EPIs utilizados pela equipe');
-  put(1, 2, 2, state.h.epi === 'sim' ? 'Sim' : state.h.epi === 'nao' ? 'Não' : '');
-  put(1, 4, 11, 'Resíduos recolhidos');
-  put(1, 5, 2, state.h.residuos === 'sim' ? 'Sim' : state.h.residuos === 'nao' ? 'Não' : '');
-  put(3, 1, 11, 'Usina do dia');
-  put(4, 1, 2, 'Usina');          put(4, 2, 2, nomeUsinaAtiva());
-  put(5, 1, 2, 'Densidade padrão (t/m³)'); put(5, 2, 4, num(densUsinaAtiva()));
-
-  put(7, 1, 1, 'Período'); put(7, 2, 1, 'Tempo'); put(7, 3, 1, 'Pluviometria (mm)');
-  put(7, 4, 1, 'Temperatura (°C)'); put(7, 5, 1, 'Praticabilidade'); put(7, 6, 1, 'Observação');
-  PERIODOS.forEach(function(p, i){
-    var r = 8 + i, c = state.clima[p.id];
-    put(r, 1, 2, p.nome); put(r, 2, 2, c.tempo || ''); put(r, 3, 4, num(c.pluv));
-    put(r, 4, 4, num(c.temp)); put(r, 5, 2, c.prat || ''); put(r, 6, 6, c.obs || '');
+  // Aba Resumo: toneladas por fórmula ligada à Planilha1; contagem de caixas (subcaixas 1.1, 1.2 contam como uma)
+  var rsRows = {};
+  rows = rsRows;
+  var P1 = function(c){ return 'Planilha1!$' + c + '$3:$' + c + '$' + fim; };
+  ['Estaca inicial','Estaca final','Faixa','Sentido','Caixas','Tonelada'].forEach(function(t, i){ put(1, i + 1, 1, t); });
+  var gr = grupos(loads), rr = 2, nCx = caixas(loads).length;
+  gr.forEach(function(g){
+    put(rr, 1, 3, g.min);
+    put(rr, 2, 3, g.max);
+    put(rr, 3, 5, /^\d+$/.test(g.faixa) ? Number(g.faixa) : (g.faixa || null));
+    put(rr, 4, 2, g.sentido || null);
+    put(rr, 5, 5, g.n);
+    if(g.faixa && g.sentido) put(rr, 6, 3, g.t, 'SUMIFS(' + P1('M') + ',' + P1('I') + ',C' + rr + ',' + P1('J') + ',D' + rr + ')');
+    else put(rr, 6, 3, g.t);
+    rr++;
   });
-
-  var hR = 12;
-  put(hR, 1, 1, 'Atividade'); put(hR, 2, 1, 'Início'); put(hR, 3, 1, 'Término'); put(hR, 4, 1, 'Causa do atraso / observação');
-  put(hR + 1, 1, 2, 'Geral (dia todo)'); put(hR + 1, 2, 2, state.hor.geralIni || ''); put(hR + 1, 3, 2, state.hor.geralFim || '');
-  ETAPAS.forEach(function(e, i){
-    var r = hR + 2 + i, d = state.etapas[e.id];
-    put(r, 1, 2, e.nome); put(r, 2, 2, d.ini || ''); put(r, 3, 2, d.fim || ''); put(r, 4, 6, d.obs || '');
+  var trr = rr;
+  put(trr, 1, 11, 'Total');
+  put(trr, 5, 5, nCx, 'SUM(E2:E' + (trr - 1) + ')');
+  put(trr, 6, 7, somaK, 'SUM(F2:F' + (trr - 1) + ')');
+  var uh = trr + 3;
+  ['Usina','Caixas','Tonelada aplicada','Saída da usina','Diferença'].forEach(function(t, i){ put(uh, i + 1, 1, t); });
+  var pu = porUsina(loads), ur = uh + 1;
+  pu.forEach(function(o){
+    put(ur, 1, 2, o.nome);
+    put(ur, 2, 5, o.n);
+    if(o.u){
+      var pos = USINAS.indexOf(o.u);
+      put(ur, 3, 4, o.t, 'SUMIFS(' + P1('M') + ',' + P1('K') + ',A' + ur + ')');
+      put(ur, 4, 4, o.massa || 0, 'Planilha1!D' + (u + 1 + pos));
+      put(ur, 5, 4, (o.massa || 0) - o.t, 'D' + ur + '-C' + ur);
+    }else{
+      put(ur, 3, 4, o.t); put(ur, 4, 4, null); put(ur, 5, 4, null);
+    }
+    ur++;
   });
-
-  var efR = hR + 2 + ETAPAS.length + 2;
-  put(efR, 1, 1, 'Mão de obra'); put(efR, 2, 1, 'Qtd.');
-  put(efR, 4, 1, 'Equipamentos e veículos'); put(efR, 5, 1, 'Qtd.');
-  state.mo.forEach(function(it, i){ put(efR + 1 + i, 1, 2, it.nome); put(efR + 1 + i, 2, 4, num(it.qtd)); });
-  state.eq.forEach(function(it, i){ put(efR + 1 + i, 4, 2, it.nome); put(efR + 1 + i, 5, 4, num(it.qtd)); });
-
-  var sheet3 = HEAD + '<worksheet ' + NS + '><sheetFormatPr defaultRowHeight="15"/>' + larguras([26, 16, 16, 28, 12, 34]) +
-    sheetData(rdoRows, altRdo) + '</worksheet>';
+  put(ur, 1, 11, 'Total');
+  put(ur, 2, 5, nCx, null);
+  put(ur, 3, 8, somaK, 'SUM(C' + (uh + 1) + ':C' + (ur - 1) + ')');
+  put(ur, 4, 8, total, 'SUM(D' + (uh + 1) + ':D' + (ur - 1) + ')');
+  put(ur, 5, 8, total - somaK, 'D' + ur + '-C' + ur);
+  var sheet3 = HEAD + '<worksheet ' + NS + '><sheetFormatPr defaultRowHeight="15"/>' + larguras([18, 18, 14, 14, 14, 18]) +
+    sheetData(rsRows, {}) + '</worksheet>';
   rows = idMap;
 
   function xf(num, font, fill, borda, h, wrap){
@@ -1609,13 +1512,13 @@ async function montarXlsx(loads){
     '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>');
   zf('_rels/.rels', HEAD + '<Relationships xmlns="' + RELNS + '"><Relationship Id="rId1" Type="' + DOCREL + '/officeDocument" Target="xl/workbook.xml"/></Relationships>');
   zf('xl/workbook.xml', HEAD + '<workbook ' + NS + ' xmlns:r="' + DOCREL + '"><sheets>' +
-    '<sheet name="Planilha1" sheetId="1" r:id="rId1"/><sheet name="Identificação" sheetId="2" r:id="rId2"/><sheet name="RDO" sheetId="3" r:id="rId4"/></sheets>' +
+    '<sheet name="Planilha1" sheetId="1" r:id="rId1"/><sheet name="Identificação" sheetId="2" r:id="rId2"/><sheet name="Resumo" sheetId="3" r:id="rId3"/></sheets>' +
     '<calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>');
   zf('xl/_rels/workbook.xml.rels', HEAD + '<Relationships xmlns="' + RELNS + '">' +
     '<Relationship Id="rId1" Type="' + DOCREL + '/worksheet" Target="worksheets/sheet1.xml"/>' +
     '<Relationship Id="rId2" Type="' + DOCREL + '/worksheet" Target="worksheets/sheet2.xml"/>' +
-    '<Relationship Id="rId3" Type="' + DOCREL + '/styles" Target="styles.xml"/>' +
-    '<Relationship Id="rId4" Type="' + DOCREL + '/worksheet" Target="worksheets/sheet3.xml"/></Relationships>');
+    '<Relationship Id="rId3" Type="' + DOCREL + '/worksheet" Target="worksheets/sheet3.xml"/>' +
+    '<Relationship Id="rId4" Type="' + DOCREL + '/styles" Target="styles.xml"/></Relationships>');
   zf('xl/styles.xml', styles);
   zf('xl/worksheets/sheet1.xml', sheet1);
   zf('xl/worksheets/sheet2.xml', sheet2);
@@ -1682,25 +1585,21 @@ async function gerarArquivo(tipo, loads){
   }
 }
 
+
+/* Service worker: deixa o formulário funcionar sem sinal depois da primeira abertura */
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+
 /* ---------- início ---------- */
 montarCabecalho();
 montarUsinas();
-montarClima();
-montarEtapas();
-montarMaoDeObra();
-montarEquipamentos();
+renderReg();
 renderList();
 refresh();
 salvar();
 getDl();
 })();
-</script>
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  });
-}
 </script>
 </body>
 </html>
