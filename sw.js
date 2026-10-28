@@ -1,4 +1,4 @@
-var CACHE = 'rastreio-massa-v62';
+var CACHE = 'rastreio-massa-v63';
 var ARQUIVOS = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e){

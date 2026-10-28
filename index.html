@@ -166,7 +166,11 @@ input:focus, select:focus, textarea:focus, button:focus-visible{
 }
 .msg.ok{background:var(--calc-bg); color:var(--accent)}
 .msg.warn{background:var(--warn-bg); color:var(--warn)}
-.msg .m-t{flex:1 1 100%}
+.m-x{
+  margin-left:auto; min-width:44px; min-height:44px; border:0; background:transparent; color:inherit;
+  font-size:26px; line-height:1; cursor:pointer; border-radius:8px; align-self:flex-start;
+}
+.msg .m-t{flex:1 1 calc(100% - 64px); min-width:0}
 .m-b{
   min-height:42px; padding:0 14px; border-radius:8px; border:1.5px solid currentColor;
   background:transparent; color:inherit; font:inherit; font-weight:700; cursor:pointer;
@@ -215,7 +219,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible{
     <h1>Rastreio de massa</h1>
     <p class="sub">VIAR Bloco 1, Dromos Infraestrutura</p>
     <p class="saved" id="saved"></p>
-    <p class="saved" id="ver">Versão 6.2: caixas e subcaixas, equipes, usinas com densidade e aba Resumo</p>
+    <p class="saved" id="ver">Versão 6.3: ticket, novas faixas, Excel igual ao PDF e resumo de caixas</p>
   </div>
 </header>
 
@@ -330,7 +334,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 'use strict';
 
 var KEY = 'viar-b1-rastreio-massa-v1';
-var FAIXAS = ['1','2','3','4','5','6','7','8','9','10','11','12','Alça'];
+var FAIXAS = ['1','2','3','4','Acostamento','Disp. Fx 1','Disp. Fx 2','Disp. Fx 3','Marg. Fx 1','Marg. Fx 2','Marg. Fx 3'];
+var FAIXA_TXT = {'Acostamento':'Acostamento', 'Disp. Fx 1':'Dispositivo Fx 1', 'Disp. Fx 2':'Dispositivo Fx 2', 'Disp. Fx 3':'Dispositivo Fx 3',
+                 'Marg. Fx 1':'Marginal Fx 1', 'Marg. Fx 2':'Marginal Fx 2', 'Marg. Fx 3':'Marginal Fx 3'};
+function faixaTxt(f){ return FAIXA_TXT[f] || (/^\d+$/.test(f) ? 'Faixa ' + f : f); }
 var RODOVIAS = ['PR-418','PR-423','PR-427','BR-277','BR-376','BR-476'];
 var EQ_KEY = 'viar-b1-rastreio-equipes-v61', US_KEY = 'viar-b1-rastreio-usinas-v61';
 var EQ_BASE = ['Fresa 1', 'Fresa 2'];
@@ -385,7 +392,7 @@ var uidN = 0;
 function uid(){ uidN++; return 'c' + Date.now().toString(36) + uidN; }
 
 function novaCarga(prev){
-  var l = {id:uid(), caixa:'', placa:'', usina:'', ei:'', ef:'', sentido:'', faixa:'', comp:'', larg:'', esp:'', dens:'', obs:'', touched:false};
+  var l = {id:uid(), caixa:'', placa:'', ticket:'', usina:'', ei:'', ef:'', sentido:'', faixa:'', comp:'', larg:'', esp:'', dens:'', obs:'', touched:false};
   if(prev){
     l.placa = prev.placa; l.usina = prev.usina; l.sentido = prev.sentido; l.faixa = prev.faixa;
     l.larg = prev.larg; l.esp = prev.esp; l.dens = prev.dens;      // estacas e comprimento: sempre digitados
@@ -409,6 +416,7 @@ function carregar(){
       if(!l.id) l.id = uid();
       if(l.usina == null) l.usina = '';
       if(l.caixa == null) l.caixa = '';
+      if(l.ticket == null) l.ticket = '';
       if(l.ef == null){                       // rascunho da versão anterior: estaca final automática vira valor digitado
         var a = num(l.efm), b = num(l.ei), c = num(l.comp);
         l.ef = a != null ? String(l.efm) : (b != null && c != null ? fmtIn(b + c/1000, 3) : '');
@@ -515,7 +523,7 @@ function porUsina(loads){
   if(sem.n) out.push(sem);
   return out.filter(function(o){ return o.n > 0 || o.massa != null; });
 }
-function rotuloGrupo(g){ return (g.faixa ? 'Faixa ' + g.faixa : 'Sem faixa') + ' - ' + (g.sentido || 'sem sentido'); }
+function rotuloGrupo(g){ return (g.faixa ? faixaTxt(g.faixa) : 'Sem faixa') + ' - ' + (g.sentido || 'sem sentido'); }
 
 /* ---------- persistência ---------- */
 var saveT = null;
@@ -539,6 +547,10 @@ function msg(text, kind, actions, ms){
   m.className = 'msg ' + (kind || 'ok');
   m.hidden = false;
   m.appendChild(mk('span', 'm-t', text));
+  var x = mk('button', 'm-x', '\u00D7');
+  x.type = 'button'; x.setAttribute('aria-label', 'Fechar mensagem');
+  x.addEventListener('click', msgOff);
+  m.appendChild(x);
   (actions || []).forEach(function(a){
     var b = mk('button', 'm-b', a.label);
     b.type = 'button';
@@ -573,6 +585,7 @@ function buildCard(l, idx){
     i.type = 'text'; i.value = l[key] || ''; i.autocomplete = 'off';
     i.setAttribute('autocorrect', 'off'); i.spellcheck = false;
     if(o.num || o.cx) i.inputMode = 'decimal';
+    if(o.tk) i.inputMode = 'numeric';
     if(o.placa){ i.autocapitalize = 'characters'; }
     if(o.ph) i.placeholder = o.ph;
     i.addEventListener('input', function(){
@@ -580,6 +593,9 @@ function buildCard(l, idx){
       if(o.num){
         var c = v.replace(/[^0-9.,]/g, '');
         if(c !== v){ i.value = c; v = c; }
+      }else if(o.tk){
+        var tk = v.replace(/\D/g, '');
+        if(tk !== v){ i.value = tk; v = tk; }
       }else if(o.cx){
         var q = v.replace(/,/g, '.').replace(/[^0-9.]/g, '');
         if(q !== v){ i.value = q; v = q; }
@@ -604,9 +620,10 @@ function buildCard(l, idx){
   var g = mk('div', 'grid');
   card.appendChild(g);
 
-  g.appendChild(campo('Caixa (ex.: 1.1)', txt('caixa', {cx:true, ph:'1.1'})));
+  g.appendChild(campo('Caixa (ex.: 1.1)', txt('caixa', {cx:true, ph:'1.1'}), {full:true}));
   refs.hPlaca = mk('p', 'hint');
   g.appendChild(campo('Placa', txt('placa', {placa:true, ph:'ABC1D23'}), {hint:refs.hPlaca}));
+  g.appendChild(campo('Nº Ticket', txt('ticket', {tk:true, ph:'só números'})));
 
   g.appendChild(campo('Estaca inicial (km)', txt('ei', {num:true, ph:'66,210'})));
   g.appendChild(campo('Estaca final (km)',   txt('ef', {num:true, ph:'66,220'})));
@@ -621,7 +638,9 @@ function buildCard(l, idx){
   var sel = mk('select');
   var o0 = mk('option', '', 'Selecione'); o0.value = '';
   sel.appendChild(o0);
-  FAIXAS.forEach(function(f){ var o = mk('option', '', f); o.value = f; sel.appendChild(o); });
+  var fxl = FAIXAS.slice();
+  if(l.faixa && fxl.indexOf(l.faixa) < 0) fxl.push(l.faixa);          // faixa de rascunho antigo (ex.: 5, Alça)
+  fxl.forEach(function(f){ var o = mk('option', '', faixaTxt(f)); o.value = f; sel.appendChild(o); });
   sel.value = l.faixa || '';
   sel.addEventListener('change', function(){ l.faixa = sel.value; l.touched = true; changed(); });
   refs.inputs.faixa = sel;
@@ -1132,22 +1151,23 @@ async function montarPdf(loads){
   function stroke(c){ doc.setDrawColor(c[0], c[1], c[2]); }
 
   var cols = [
-    {t:'Caixa',         w:12, a:'l'},
-    {t:'Placa',         w:20, a:'l'},
+    {t:'Caixa',         w:11, a:'l'},
+    {t:'Placa',         w:19, a:'l'},
+    {t:'Nº Ticket',     w:15, a:'l'},
     {t:'Estaca inicial',w:20, a:'r'},
     {t:'Estaca final',  w:20, a:'r'},
     {t:'Compr. (m)',    w:15, a:'r'},
-    {t:'Larg.(m)',      w:13, a:'r'},
-    {t:'Esp. (m)',      w:14, a:'r'},
-    {t:'Faixa',         w:11, a:'c'},
-    {t:'Sentido',       w:21, a:'l'},
+    {t:'Larg.(m)',      w:12, a:'r'},
+    {t:'Esp. (m)',      w:13, a:'r'},
+    {t:'Faixa',         w:22, a:'c'},
+    {t:'Sentido',       w:20, a:'l'},
     {t:'Usina',         w:24, a:'l'},
-    {t:'Dens. (t/m3)',  w:17, a:'r', sup:true},
-    {t:'Tonelada',      w:18, a:'r'},
-    {t:'Ton. acum.',    w:20, a:'r'},
-    {t:'Observação',    w:52, a:'l'}
+    {t:'Dens. (t/m3)',  w:16, a:'r', sup:true},
+    {t:'Tonelada',      w:17, a:'r'},
+    {t:'Ton. acum.',    w:19, a:'r'},
+    {t:'Observação',    w:34, a:'l'}
   ];
-  var OBS_W = cols[13].w;
+  var OBS_W = cols[14].w;
   var TON_X = M; for(var k = 0; k < 12; k++) TON_X += cols[k].w;
 
   function celula(s, x, w, y, a){
@@ -1215,7 +1235,7 @@ async function montarPdf(loads){
   ls.forEach(function(r, i){
     var l = r.l;
     var vals = [
-      l.caixa || '', l.placa || '', fmt(num(l.ei), 3), fmt(r.c.ef, 3),
+      l.caixa || '', l.placa || '', l.ticket || '', fmt(num(l.ei), 3), fmt(r.c.ef, 3),
       fmt(num(l.comp), 2), fmt(num(l.larg), 2), fmt(num(l.esp), 3),
       l.faixa || '', l.sentido || '', nomeUsina(l.usina), fmt(num(l.dens), 3),
       fmt(r.c.t, 3), fmt(r.acum, 3)
@@ -1234,7 +1254,7 @@ async function montarPdf(loads){
     ink(INK);
     var x = M;
     cols.forEach(function(c, j){
-      if(j < 13) celula(vals[j], x, c.w, y + 4.7, c.a);
+      if(j < 14) celula(vals[j], x, c.w, y + 4.7, c.a);
       else doc.text(obsL, x + PAD, y + 4.7);
       doc.line(x, y, x, y + rh);
       x += c.w;
@@ -1250,7 +1270,7 @@ async function montarPdf(loads){
   stroke(LINE); doc.rect(M, y, TW, 8, 'S');
   ink(INK); doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
   doc.text('Total aplicado', M + PAD, y + 5.4);
-  doc.text(fmt(aplicado, 3), TON_X + cols[11].w - PAD, y + 5.4, {align:'right'});
+  doc.text(fmt(aplicado, 3), TON_X + cols[12].w - PAD, y + 5.4, {align:'right'});
   y += 8 + 10;
 
   // Tabelas de resumo
@@ -1284,10 +1304,21 @@ async function montarPdf(loads){
     y += 8;
   }
 
+  var cxs = caixas(loads);
+  tabPdf('Resumo - caixas lançadas',
+    ['Caixa', 'Estaca inicial', 'Estaca final', 'Compr. (m)', 'Larg. (m)', 'Esp. (m)', 'Faixa', 'Sentido', 'Usina', 'Dens.', 'Tonelada', 'Ton. acum.'],
+    [26, 24, 24, 18, 15, 15, 24, 24, 40, 17, 24, 26], ['l', 'r', 'r', 'r', 'r', 'r', 'c', 'l', 'l', 'r', 'r', 'r'],
+    cxs.map(function(c){
+      return [c.rotulo, fmt(c.ei, 3) || '-', fmt(c.ef, 3) || '-', fmt(c.comp, 2) || '-', fmt(c.larg, 2) || '-', fmt(c.esp, 3) || '-',
+        c.faixa || '-', c.sentido || '-', doc.splitTextToSize(c.usinas.join(', ') || '-', 36)[0], fmt(c.dens, 3) || '-',
+        c.t == null ? '-' : fmt(c.t, 3), c.acum == null ? '-' : fmt(c.acum, 3)];
+    }),
+    ['Total', '', '', '', '', '', '', '', '', '', fmt(aplicado, 3), fmt(aplicado, 3)]);
+
   var gr = grupos(loads);
   tabPdf('Avanço por faixa e sentido',
     ['Estaca inicial', 'Estaca final', 'Faixa', 'Sentido', 'Usina(s)', 'Caixas', 'Tonelada'],
-    [28, 28, 18, 28, 70, 18, 32], ['r', 'r', 'c', 'l', 'l', 'r', 'r'],
+    [28, 28, 28, 28, 64, 18, 32], ['r', 'r', 'c', 'l', 'l', 'r', 'r'],
     gr.map(function(g){
       return [fmt(g.min, 3) || '-', fmt(g.max, 3) || '-', g.faixa || '-', g.sentido || '-', doc.splitTextToSize(g.usinas.join(', ') || '-', 66)[0], String(g.n), fmt(g.t, 3)];
     }),
@@ -1324,178 +1355,262 @@ function xesc(s){
 }
 var COLS_L = ['','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
 
-/* Planilha no mesmo modelo do rastreio: fórmulas vivas + valores em cache
-   (visualizadores de celular não recalculam). Semântica do Excel: célula vazia
-   conta como 0 e "" + número usa N(). */
+/* Planilha idêntica ao PDF (mesmas cores, cabeçalho, tabelas e ordem), com fórmulas vivas:
+   dá para editar no Excel e imprimir/exportar em PDF (A4 paisagem) com o mesmo visual. */
 async function montarXlsx(loads){
-  var rows = {}, altura = {2:30};
-  // estilos (índices em cellXfs): 0 padrão, 1 cabeçalho, 2 texto, 3 0,000, 4 0,00, 5 centro,
-  // 6 texto quebrado, 7 negrito 0,000, 8 negrito 0,00, 9 azul esq., 10 azul dir., 11 negrito, 12 normal
+  var C = {NAVY:'1F3864', YEL:'FFC72C', INK:'152238', GRAY:'5B6980', LINE:'C8D0DE', ZEB:'F4F6FA', TOTF:'FFF0BE', WHITE:'FFFFFF'};
+  var fonts = [], fills = [{t:'none'}, {t:'gray125'}], borders = [{c:null}], xfs = [], xfKey = {}, nfs = [];
+  function idx(list, obj){
+    var k = JSON.stringify(obj);
+    for(var i = 0; i < list.length; i++) if(JSON.stringify(list[i]) === k) return i;
+    list.push(obj); return list.length - 1;
+  }
+  function nfId(code){
+    if(!code) return 0;
+    var i = nfs.indexOf(code); if(i < 0){ nfs.push(code); i = nfs.length - 1; }
+    return 164 + i;
+  }
+  // o: {b, sz, c, bg, bd, h, wrap, nf}
+  function sid(o){
+    var k = JSON.stringify(o);
+    if(xfKey[k] != null) return xfKey[k];
+    var x = {
+      nf: nfId(o.nf),
+      f: idx(fonts, {b:!!o.b, sz:o.sz || 9, c:o.c || C.INK}),
+      fl: o.bg ? idx(fills, {t:'solid', c:o.bg}) : 0,
+      bd: o.bd ? idx(borders, {c:o.bd}) : 0,
+      h: o.h || 'left', w: !!o.wrap
+    };
+    xfs.push(x); xfKey[k] = xfs.length - 1;
+    return xfs.length - 1;
+  }
+  sid({});
+
+  var rows = {}, alt = {}, merges = [];
+  function ref(c, r){ return COLS_L[c] + r; }
   function put(r, c, s, v, f){
-    var ref = COLS_L[c] + r, x;
+    var rf = ref(c, r), x;
     if(f != null){
-      if(typeof v === 'number') x = '<c r="' + ref + '" s="' + s + '"><f>' + xesc(f) + '</f><v>' + v + '</v></c>';
-      else x = '<c r="' + ref + '" s="' + s + '" t="str"><f>' + xesc(f) + '</f><v>' + xesc(v == null ? '' : v) + '</v></c>';
+      if(typeof v === 'number') x = '<c r="' + rf + '" s="' + s + '"><f>' + xesc(f) + '</f><v>' + v + '</v></c>';
+      else x = '<c r="' + rf + '" s="' + s + '" t="str"><f>' + xesc(f) + '</f><v>' + xesc(v == null ? '' : v) + '</v></c>';
     }else if(typeof v === 'number'){
-      x = '<c r="' + ref + '" s="' + s + '"><v>' + v + '</v></c>';
+      x = '<c r="' + rf + '" s="' + s + '"><v>' + v + '</v></c>';
     }else if(v != null && v !== ''){
-      x = '<c r="' + ref + '" s="' + s + '" t="inlineStr"><is><t xml:space="preserve">' + xesc(v) + '</t></is></c>';
+      x = '<c r="' + rf + '" s="' + s + '" t="inlineStr"><is><t xml:space="preserve">' + xesc(v) + '</t></is></c>';
     }else{
-      x = '<c r="' + ref + '" s="' + s + '"/>';
+      x = '<c r="' + rf + '" s="' + s + '"/>';
     }
     (rows[r] = rows[r] || {})[c] = x;
   }
+  function span(r, c1, c2, s, v, f){
+    put(r, c1, s, v, f);
+    for(var c = c1 + 1; c <= c2; c++) put(r, c, s, null);
+    var m = ref(c1, r) + ':' + ref(c2, r);
+    if(c2 > c1 && merges.indexOf(m) < 0) merges.push(m);
+  }
+  function faixaVal(f){ return /^\d+$/.test(f || '') ? Number(f) : (f || null); }
 
-  var cab = ['Caixa','Placa','Estaca inicial','Estaca Final','Comprimento','Largura','Espessura','Faixa','Sentido','Usina','Densidade','Tonelada','Tonelada acumulada','Observação'];
-  cab.forEach(function(t, i){ put(2, i + 2, 1, t); });
+  var NC = 15, NOTA = '0.000';
+  var COL = [
+    {t:'Caixa',a:'left',w:7.5}, {t:'Placa',a:'left',w:11}, {t:'Nº Ticket',a:'left',w:10},
+    {t:'Estaca inicial',a:'right',w:12}, {t:'Estaca final',a:'right',w:12}, {t:'Compr. (m)',a:'right',w:10}, {t:'Larg. (m)',a:'right',w:9}, {t:'Esp. (m)',a:'right',w:9},
+    {t:'Faixa',a:'center',w:12}, {t:'Sentido',a:'left',w:12.5}, {t:'Usina',a:'left',w:14},
+    {t:'Dens. (t/m³)',a:'right',w:11}, {t:'Tonelada',a:'right',w:11}, {t:'Ton. acum.',a:'right',w:12}, {t:'Observação',a:'left',w:30}
+  ];
 
-  var acum = 0, somaK = 0;
+  /* ----- faixa superior ----- */
+  var navy = sid({bg:C.NAVY}), yel = sid({bg:C.YEL});
+  for(var c = 1; c <= NC; c++){ put(1, c, navy, null); put(2, c, navy, null); put(3, c, yel, null); }
+  put(1, 1, sid({bg:C.NAVY, b:1, sz:9, c:C.WHITE}), 'Dromos Infraestrutura');
+  put(2, 1, sid({bg:C.NAVY, b:1, sz:17, c:C.WHITE}), 'Rastreio de massa');
+  put(2, NC, sid({bg:C.NAVY, sz:9.5, c:C.WHITE, h:'right'}), 'Contrato VIAR Bloco 1');
+  alt[1] = 16; alt[2] = 28; alt[3] = 6; alt[4] = 8;
+
+  /* ----- identificação ----- */
+  var lab = sid({sz:7.5, c:C.GRAY}), val = sid({b:1, sz:10.5});
+  [['Equipe', state.h.equipe, 1], ['Data', fmtData(state.h.data), 4], ['Rodovia', state.h.rodovia, 9], ['Responsável', state.h.resp, 12]].forEach(function(p){
+    put(5, p[2], lab, p[0]); put(6, p[2], val, p[1] || '-');
+  });
+  alt[5] = 13; alt[6] = 17; alt[7] = 8;
+
+  /* ----- lançamentos ----- */
+  var R0 = 8;
+  COL.forEach(function(c, j){ put(R0, j + 1, sid({bg:C.NAVY, b:1, sz:7.5, c:C.WHITE, bd:C.NAVY, h:c.a === 'center' ? 'center' : c.a, wrap:1}), c.t); });
+  alt[R0] = 24;
+  var first = R0 + 1, fim = R0 + loads.length, acum = 0, somaK = 0;
   loads.forEach(function(l, i){
-    var r = 3 + i;
+    var r = first + i, z = i % 2 ? C.ZEB : null;
+    function st(j, nf){ return sid({sz:8.5, bd:C.LINE, bg:z, h:COL[j].a, nf:nf, wrap:j === 14}); }
     var ei = num(l.ei), ef = num(l.ef), comp = num(l.comp), larg = num(l.larg), esp = num(l.esp), dens = num(l.dens);
     var kVazio = dens == null;
     var k = kVazio ? '' : (comp || 0) * (larg || 0) * (esp || 0) * dens;
     if(!kVazio){ somaK += k; acum += k; }
-    var cx = l.caixa || '';
-    if(cx) put(r, 2, 2, cx); else put(r, 2, 2, null);
-    put(r, 3, 2, l.placa || null);
-    put(r, 4, 3, ei);
-    put(r, 5, 3, ef);
-    put(r, 6, 4, comp);
-    put(r, 7, 4, larg);
-    put(r, 8, 3, esp);
-    put(r, 9, 5, /^\d+$/.test(l.faixa || '') ? Number(l.faixa) : (l.faixa || null));
-    put(r, 10, 2, l.sentido || null);
-    put(r, 11, 2, nomeUsina(l.usina) || null);
-    put(r, 12, 3, dens);
-    put(r, 13, 3, k, 'IF(L' + r + '="","",F' + r + '*G' + r + '*H' + r + '*L' + r + ')');
-    put(r, 14, 3, kVazio ? '' : acum, i === 0 ? 'IF(M' + r + '="","",M' + r + ')' : 'IF(M' + r + '="","",M' + r + '+N(N' + (r - 1) + '))');
-    put(r, 15, 6, l.obs || null);
+    put(r, 1, st(0), l.caixa || null);
+    put(r, 2, st(1), l.placa || null);
+    put(r, 3, st(2), l.ticket || null);
+    put(r, 4, st(3, NOTA), ei);
+    put(r, 5, st(4, NOTA), ef);
+    put(r, 6, st(5, '0.00'), comp);
+    put(r, 7, st(6, '0.00'), larg);
+    put(r, 8, st(7, NOTA), esp);
+    put(r, 9, st(8), faixaVal(l.faixa));
+    put(r, 10, st(9), l.sentido || null);
+    put(r, 11, st(10), nomeUsina(l.usina) || null);
+    put(r, 12, st(11, NOTA), dens);
+    put(r, 13, st(12, NOTA), k, 'IF(L' + r + '="","",F' + r + '*G' + r + '*H' + r + '*L' + r + ')');
+    put(r, 14, st(13, NOTA), kVazio ? '' : acum, i === 0 ? 'IF(M' + r + '="","",M' + r + ')' : 'IF(M' + r + '="","",M' + r + '+N(N' + (r - 1) + '))');
+    put(r, 15, st(14), l.obs || null);
+    var linhasObs = 0;
+    String(l.obs || '').split(/\r?\n/).forEach(function(p){ linhasObs += Math.max(1, Math.ceil(p.length / 32)); });
+    alt[r] = Math.max(17, linhasObs * 11.5 + 5);
   });
+  var tr = fim + 1;
+  var totS = sid({bg:C.TOTF, b:1, sz:9, bd:C.LINE}), totN = sid({bg:C.TOTF, b:1, sz:9, bd:C.LINE, h:'right', nf:NOTA});
+  for(c = 1; c <= NC; c++) put(tr, c, totS, null);
+  put(tr, 1, totS, 'Total aplicado');
+  put(tr, 13, totN, somaK, 'SUM(M' + first + ':M' + fim + ')');
+  alt[tr] = 18;
+  var MR = '$M$' + first + ':$M$' + fim, KR = '$K$' + first + ':$K$' + fim, IR = '$I$' + first + ':$I$' + fim, JR = '$J$' + first + ':$J$' + fim, AR = '$A$' + first + ':$A$' + fim;
 
-  var fim = 2 + loads.length, soma = fim + 1;
-  put(soma, 13, 7, somaK, 'SUM(M3:M' + fim + ')');
-
-  var u = soma + 2, nU = USINAS.length;
-  var total = totalUsina();
-  put(u, 3, 9, 'Usina'); put(u, 4, 10, 'Ton');
-  USINAS.forEach(function(us, i){
-    put(u + 1 + i, 3, 2, us.nome);
-    put(u + 1 + i, 4, 4, num(state.usina[us.id]));
-  });
-  put(u, 6, 9, 'Total Usina');  put(u, 7, 8, total, 'SUM(D' + (u + 1) + ':D' + (u + nU) + ')');
-  put(u + 1, 6, 9, 'Aplicado'); put(u + 1, 7, 8, somaK, 'M' + soma);
-  put(u + 2, 6, 9, 'Sobra');    put(u + 2, 7, 8, total - somaK, 'G' + u + '-G' + (u + 1));
-
-  function sheetData(mapa, alt){
-    return '<sheetData>' + Object.keys(mapa).map(Number).sort(function(a, b){ return a - b; }).map(function(r){
-      var cs = Object.keys(mapa[r]).map(Number).sort(function(a, b){ return a - b; }).map(function(c){ return mapa[r][c]; }).join('');
-      return '<row r="' + r + '"' + (alt[r] ? ' ht="' + alt[r] + '" customHeight="1"' : '') + '>' + cs + '</row>';
-    }).join('') + '</sheetData>';
+  /* ----- tabelas de resumo ----- */
+  var r = tr + 2;
+  function titulo(t){ put(r, 1, sid({b:1, sz:9.5}), t); alt[r] = 16; r++; }
+  function cabecalho(spans, heads, al){
+    spans.forEach(function(sp, j){ span(r, sp[0], sp[1], sid({bg:C.NAVY, b:1, sz:8, c:C.WHITE, bd:C.NAVY, h:al[j]}), heads[j]); });
+    alt[r] = 18; r++;
   }
-  function larguras(ws){
-    return '<cols>' + ws.map(function(w, i){ return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>'; }).join('') + '</cols>';
+  function celulaS(spans, j, al, o, v, f, nf){
+    var s = sid({sz:9, bd:C.LINE, h:al[j], nf:nf || null, b:o.b, bg:o.bg});
+    span(r, spans[j][0], spans[j][1], s, v, f);
+  }
+
+  // Resumo - caixas lançadas
+  var cxs = caixas(loads);
+  titulo('Resumo - caixas lançadas');
+  var sp1 = [[1,2],[3,4],[5,5],[6,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,13],[14,14]];
+  var al1 = ['left','right','right','right','right','right','center','left','left','right','right','right'];
+  cabecalho(sp1, ['Caixa','Estaca inicial','Estaca final','Compr. (m)','Larg. (m)','Esp. (m)','Faixa','Sentido','Usina','Dens. (t/m³)','Tonelada','Ton. acum.'], al1);
+  var cx0 = r;
+  cxs.forEach(function(cx){
+    var key = 'IFERROR(LEFT(A' + r + ',FIND(" ",A' + r + ')-1),A' + r + ')';
+    var o = {};
+    celulaS(sp1, 0, al1, o, cx.rotulo);
+    celulaS(sp1, 1, al1, o, cx.ei, null, NOTA);
+    celulaS(sp1, 2, al1, o, cx.ef, null, NOTA);
+    celulaS(sp1, 3, al1, o, cx.comp, null, '0.00');
+    celulaS(sp1, 4, al1, o, cx.larg, null, '0.00');
+    celulaS(sp1, 5, al1, o, cx.esp, null, NOTA);
+    celulaS(sp1, 6, al1, o, faixaVal(cx.faixa));
+    celulaS(sp1, 7, al1, o, cx.sentido || null);
+    celulaS(sp1, 8, al1, o, cx.usinas.join(', ') || null);
+    celulaS(sp1, 9, al1, o, cx.dens, null, NOTA);
+    if(cx.num) celulaS(sp1, 10, al1, o, cx.t || 0, 'SUMIFS(' + MR + ',' + AR + ',' + key + ')+SUMIFS(' + MR + ',' + AR + ',' + key + '&".*")', NOTA);
+    else celulaS(sp1, 10, al1, o, cx.t, null, NOTA);
+    celulaS(sp1, 11, al1, o, cx.acum == null ? '' : cx.acum, 'IF(M' + r + '="","",SUM(M$' + cx0 + ':M' + r + '))', NOTA);
+    alt[r] = 16; r++;
+  });
+  var cx1 = r - 1, ot = {b:1, bg:C.TOTF};
+  sp1.forEach(function(sp, j){ celulaS(sp1, j, al1, ot, null); });
+  celulaS(sp1, 0, al1, ot, 'Total');
+  celulaS(sp1, 10, al1, ot, somaK, 'SUM(M' + cx0 + ':M' + cx1 + ')', NOTA);
+  celulaS(sp1, 11, al1, ot, somaK, 'M' + r, NOTA);
+  alt[r] = 16; r += 2;
+
+  // Avanço por faixa e sentido
+  var gr = grupos(loads);
+  titulo('Avanço por faixa e sentido');
+  var sp2 = [[1,2],[3,4],[5,6],[7,9],[10,12],[13,13],[14,14]];
+  var al2 = ['right','right','center','left','left','right','right'];
+  cabecalho(sp2, ['Estaca inicial','Estaca final','Faixa','Sentido','Usina(s)','Caixas','Tonelada'], al2);
+  var g0 = r;
+  gr.forEach(function(g){
+    var o = {};
+    celulaS(sp2, 0, al2, o, g.min, null, NOTA);
+    celulaS(sp2, 1, al2, o, g.max, null, NOTA);
+    celulaS(sp2, 2, al2, o, faixaVal(g.faixa));
+    celulaS(sp2, 3, al2, o, g.sentido || null);
+    celulaS(sp2, 4, al2, o, g.usinas.join(', ') || null);
+    celulaS(sp2, 5, al2, o, g.n);
+    if(g.faixa && g.sentido) celulaS(sp2, 6, al2, o, g.t, 'SUMIFS(' + MR + ',' + IR + ',E' + r + ',' + JR + ',G' + r + ')', NOTA);
+    else celulaS(sp2, 6, al2, o, g.t, null, NOTA);
+    alt[r] = 16; r++;
+  });
+  var g1 = r - 1;
+  sp2.forEach(function(sp, j){ celulaS(sp2, j, al2, ot, null); });
+  celulaS(sp2, 4, al2, ot, 'Total');
+  celulaS(sp2, 5, al2, ot, cxs.length, 'SUM(M' + g0 + ':M' + g1 + ')');
+  celulaS(sp2, 6, al2, ot, somaK, 'SUM(N' + g0 + ':N' + g1 + ')', NOTA);
+  alt[r] = 16; r += 2;
+
+  // Massa por usina
+  var total = totalUsina(), pu = porUsina(loads);
+  titulo('Massa por usina');
+  var sp3 = [[1,3],[4,5],[6,8],[9,10],[11,12]];
+  var al3 = ['left','right','right','right','right'];
+  cabecalho(sp3, ['Usina','Caixas','Aplicado (t)','Saída da usina (t)','Diferença (t)'], al3);
+  var u0 = r;
+  pu.forEach(function(o){
+    var s = {};
+    celulaS(sp3, 0, al3, s, o.nome);
+    celulaS(sp3, 1, al3, s, o.n);
+    if(o.u) celulaS(sp3, 2, al3, s, o.t, 'SUMIFS(' + MR + ',' + KR + ',A' + r + ')', '0.00');
+    else celulaS(sp3, 2, al3, s, o.t, null, '0.00');
+    celulaS(sp3, 3, al3, s, o.massa, null, '0.00');
+    if(o.u) celulaS(sp3, 4, al3, s, o.massa == null ? '-' : o.massa - o.t, 'IF(I' + r + '="","-",I' + r + '-F' + r + ')', '0.00');
+    else celulaS(sp3, 4, al3, s, '-');
+    alt[r] = 16; r++;
+  });
+  var u1 = r - 1;
+  sp3.forEach(function(sp, j){ celulaS(sp3, j, al3, ot, null); });
+  celulaS(sp3, 0, al3, ot, 'Total');
+  celulaS(sp3, 1, al3, ot, cxs.length);
+  celulaS(sp3, 2, al3, ot, somaK, 'SUM(F' + u0 + ':F' + u1 + ')', '0.00');
+  celulaS(sp3, 3, al3, ot, total, 'SUM(I' + u0 + ':I' + u1 + ')', '0.00');
+  celulaS(sp3, 4, al3, ot, total > 0 ? total - somaK : '-', 'IF(I' + r + '=0,"-",I' + r + '-F' + r + ')', '0.00');
+  alt[r] = 16; r += 2;
+
+  var ag = new Date();
+  put(r, 1, sid({sz:7.5, c:C.GRAY}), 'Gerado em ' + p2(ag.getDate()) + '/' + p2(ag.getMonth() + 1) + '/' + ag.getFullYear() + ' ' + p2(ag.getHours()) + ':' + p2(ag.getMinutes()));
+
+  /* ----- XML ----- */
+  function sheetData(mapa){
+    return '<sheetData>' + Object.keys(mapa).map(Number).sort(function(a, b){ return a - b; }).map(function(rr){
+      var cs = Object.keys(mapa[rr]).map(Number).sort(function(a, b){ return a - b; }).map(function(cc){ return mapa[rr][cc]; }).join('');
+      return '<row r="' + rr + '"' + (alt[rr] ? ' ht="' + alt[rr] + '" customHeight="1"' : '') + '>' + cs + '</row>';
+    }).join('') + '</sheetData>';
   }
   var NS = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"';
   var HEAD = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
-
+  var cols = '<cols>' + COL.map(function(c, i){ return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + c.w + '" customWidth="1"/>'; }).join('') + '</cols>';
   var validacao = loads.length
     ? '<dataValidations count="2">' +
-        '<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="J3:J' + fim + '"><formula1>"Crescente,Decrescente"</formula1></dataValidation>' +
-        '<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="I3:I' + fim + '"><formula1>"' + xesc(FAIXAS.join(',')) + '"</formula1></dataValidation>' +
+        '<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="J' + first + ':J' + fim + '"><formula1>"Crescente,Decrescente"</formula1></dataValidation>' +
+        '<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="I' + first + ':I' + fim + '"><formula1>"' + xesc(FAIXAS.join(',')) + '"</formula1></dataValidation>' +
       '</dataValidations>'
     : '';
-  var sheet1 = HEAD + '<worksheet ' + NS + '><sheetViews><sheetView workbookViewId="0"/></sheetViews>' +
-    '<sheetFormatPr defaultRowHeight="15"/>' + larguras([3.7, 9, 18, 14, 14, 13, 11, 11, 8, 13, 18, 11, 12, 19, 34]) +
-    sheetData(rows, altura) + validacao + '<pageMargins left="0.5" right="0.5" top="0.75" bottom="0.75" header="0.3" footer="0.3"/></worksheet>';
+  var sheet1 = HEAD + '<worksheet ' + NS + '><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>' +
+    '<sheetViews><sheetView showGridLines="0" workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/>' + cols +
+    sheetData(rows) +
+    '<mergeCells count="' + merges.length + '">' + merges.map(function(m){ return '<mergeCell ref="' + m + '"/>'; }).join('') + '</mergeCells>' +
+    validacao +
+    '<pageMargins left="0.4" right="0.4" top="0.4" bottom="0.5" header="0.2" footer="0.2"/>' +
+    '<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
 
-  var idRows = {};
-  var altId = {};
-  var idMap = rows; rows = idRows;       // reutiliza put() para a segunda aba
-  [['Equipe', state.h.equipe], ['Data', fmtData(state.h.data)], ['Rodovia', state.h.rodovia], ['Responsável', state.h.resp]].forEach(function(p, i){
-    var r = i + 1;
-    put(r, 1, 11, p[0]); put(r, 2, 12, p[1] || '');
-  });
-  var sheet2 = HEAD + '<worksheet ' + NS + '><sheetFormatPr defaultRowHeight="15"/>' + larguras([16, 34]) +
-    sheetData(idRows, altId) + '</worksheet>';
-  // Aba Resumo: toneladas por fórmula ligada à Planilha1; contagem de caixas (subcaixas 1.1, 1.2 contam como uma)
-  var rsRows = {};
-  rows = rsRows;
-  var P1 = function(c){ return 'Planilha1!$' + c + '$3:$' + c + '$' + fim; };
-  ['Estaca inicial','Estaca final','Faixa','Sentido','Caixas','Tonelada'].forEach(function(t, i){ put(1, i + 1, 1, t); });
-  var gr = grupos(loads), rr = 2, nCx = caixas(loads).length;
-  gr.forEach(function(g){
-    put(rr, 1, 3, g.min);
-    put(rr, 2, 3, g.max);
-    put(rr, 3, 5, /^\d+$/.test(g.faixa) ? Number(g.faixa) : (g.faixa || null));
-    put(rr, 4, 2, g.sentido || null);
-    put(rr, 5, 5, g.n);
-    if(g.faixa && g.sentido) put(rr, 6, 3, g.t, 'SUMIFS(' + P1('M') + ',' + P1('I') + ',C' + rr + ',' + P1('J') + ',D' + rr + ')');
-    else put(rr, 6, 3, g.t);
-    rr++;
-  });
-  var trr = rr;
-  put(trr, 1, 11, 'Total');
-  put(trr, 5, 5, nCx, 'SUM(E2:E' + (trr - 1) + ')');
-  put(trr, 6, 7, somaK, 'SUM(F2:F' + (trr - 1) + ')');
-  var uh = trr + 3;
-  ['Usina','Caixas','Tonelada aplicada','Saída da usina','Diferença'].forEach(function(t, i){ put(uh, i + 1, 1, t); });
-  var pu = porUsina(loads), ur = uh + 1;
-  pu.forEach(function(o){
-    put(ur, 1, 2, o.nome);
-    put(ur, 2, 5, o.n);
-    if(o.u){
-      var pos = USINAS.indexOf(o.u);
-      put(ur, 3, 4, o.t, 'SUMIFS(' + P1('M') + ',' + P1('K') + ',A' + ur + ')');
-      put(ur, 4, 4, o.massa || 0, 'Planilha1!D' + (u + 1 + pos));
-      put(ur, 5, 4, (o.massa || 0) - o.t, 'D' + ur + '-C' + ur);
-    }else{
-      put(ur, 3, 4, o.t); put(ur, 4, 4, null); put(ur, 5, 4, null);
-    }
-    ur++;
-  });
-  put(ur, 1, 11, 'Total');
-  put(ur, 2, 5, nCx, null);
-  put(ur, 3, 8, somaK, 'SUM(C' + (uh + 1) + ':C' + (ur - 1) + ')');
-  put(ur, 4, 8, total, 'SUM(D' + (uh + 1) + ':D' + (ur - 1) + ')');
-  put(ur, 5, 8, total - somaK, 'D' + ur + '-C' + ur);
-  var sheet3 = HEAD + '<worksheet ' + NS + '><sheetFormatPr defaultRowHeight="15"/>' + larguras([18, 18, 14, 14, 14, 18]) +
-    sheetData(rsRows, {}) + '</worksheet>';
-  rows = idMap;
-
-  function xf(num, font, fill, borda, h, wrap){
-    return '<xf numFmtId="' + num + '" fontId="' + font + '" fillId="' + fill + '" borderId="' + borda + '" xfId="0"' +
-      ' applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">' +
-      '<alignment horizontal="' + h + '" vertical="center"' + (wrap ? ' wrapText="1"' : '') + '/></xf>';
-  }
-  var borda = '<color rgb="FFB7C2D6"/>';
   var styles = HEAD + '<styleSheet ' + NS + '>' +
-    '<numFmts count="2"><numFmt numFmtId="164" formatCode="0.000"/><numFmt numFmtId="165" formatCode="0.00"/></numFmts>' +
-    '<fonts count="3">' +
-      '<font><sz val="10"/><color rgb="FF152238"/><name val="Arial"/></font>' +
-      '<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Arial"/></font>' +
-      '<font><b/><sz val="10"/><color rgb="FF152238"/><name val="Arial"/></font>' +
-    '</fonts>' +
-    '<fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>' +
-      '<fill><patternFill patternType="solid"><fgColor rgb="FF1F3864"/><bgColor indexed="64"/></patternFill></fill></fills>' +
-    '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border>' +
-      '<border><left style="thin">' + borda + '</left><right style="thin">' + borda + '</right><top style="thin">' + borda + '</top><bottom style="thin">' + borda + '</bottom><diagonal/></border></borders>' +
+    '<numFmts count="' + nfs.length + '">' + nfs.map(function(code, i){ return '<numFmt numFmtId="' + (164 + i) + '" formatCode="' + xesc(code) + '"/>'; }).join('') + '</numFmts>' +
+    '<fonts count="' + fonts.length + '">' + fonts.map(function(f){
+      return '<font>' + (f.b ? '<b/>' : '') + '<sz val="' + f.sz + '"/><color rgb="FF' + f.c + '"/><name val="Arial"/></font>'; }).join('') + '</fonts>' +
+    '<fills count="' + fills.length + '">' + fills.map(function(f){
+      return f.t === 'solid' ? '<fill><patternFill patternType="solid"><fgColor rgb="FF' + f.c + '"/><bgColor indexed="64"/></patternFill></fill>'
+                             : '<fill><patternFill patternType="' + f.t + '"/></fill>'; }).join('') + '</fills>' +
+    '<borders count="' + borders.length + '">' + borders.map(function(b){
+      if(!b.c) return '<border><left/><right/><top/><bottom/><diagonal/></border>';
+      var s = '<color rgb="FF' + b.c + '"/>';
+      return '<border><left style="thin">' + s + '</left><right style="thin">' + s + '</right><top style="thin">' + s + '</top><bottom style="thin">' + s + '</bottom><diagonal/></border>'; }).join('') + '</borders>' +
     '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
-    '<cellXfs count="13">' +
-      xf(0, 0, 0, 0, 'general', false) +   // 0
-      xf(0, 1, 2, 1, 'center', true) +     // 1 cabeçalho
-      xf(0, 0, 0, 1, 'left', false) +      // 2 texto
-      xf(164, 0, 0, 1, 'right', false) +   // 3 0,000
-      xf(165, 0, 0, 1, 'right', false) +   // 4 0,00
-      xf(0, 0, 0, 1, 'center', false) +    // 5 centro
-      xf(0, 0, 0, 1, 'left', true) +       // 6 texto quebrado
-      xf(164, 2, 0, 1, 'right', false) +   // 7 negrito 0,000
-      xf(165, 2, 0, 1, 'right', false) +   // 8 negrito 0,00
-      xf(0, 1, 2, 1, 'left', false) +      // 9 azul esquerda
-      xf(0, 1, 2, 1, 'right', false) +     // 10 azul direita
-      xf(0, 2, 0, 0, 'left', false) +      // 11 negrito sem borda
-      xf(0, 0, 0, 0, 'left', false) +      // 12 normal sem borda
-    '</cellXfs>' +
+    '<cellXfs count="' + xfs.length + '">' + xfs.map(function(x){
+      return '<xf numFmtId="' + x.nf + '" fontId="' + x.f + '" fillId="' + x.fl + '" borderId="' + x.bd + '" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">' +
+        '<alignment horizontal="' + x.h + '" vertical="center"' + (x.w ? ' wrapText="1"' : '') + '/></xf>'; }).join('') + '</cellXfs>' +
     '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
 
   var RELNS = 'http://schemas.openxmlformats.org/package/2006/relationships';
@@ -1507,22 +1622,15 @@ async function montarXlsx(loads){
     '<Default Extension="xml" ContentType="application/xml"/>' +
     '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
     '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
-    '<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
-    '<Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
     '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>');
   zf('_rels/.rels', HEAD + '<Relationships xmlns="' + RELNS + '"><Relationship Id="rId1" Type="' + DOCREL + '/officeDocument" Target="xl/workbook.xml"/></Relationships>');
-  zf('xl/workbook.xml', HEAD + '<workbook ' + NS + ' xmlns:r="' + DOCREL + '"><sheets>' +
-    '<sheet name="Planilha1" sheetId="1" r:id="rId1"/><sheet name="Identificação" sheetId="2" r:id="rId2"/><sheet name="Resumo" sheetId="3" r:id="rId3"/></sheets>' +
+  zf('xl/workbook.xml', HEAD + '<workbook ' + NS + ' xmlns:r="' + DOCREL + '"><sheets><sheet name="Rastreio" sheetId="1" r:id="rId1"/></sheets>' +
     '<calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>');
   zf('xl/_rels/workbook.xml.rels', HEAD + '<Relationships xmlns="' + RELNS + '">' +
     '<Relationship Id="rId1" Type="' + DOCREL + '/worksheet" Target="worksheets/sheet1.xml"/>' +
-    '<Relationship Id="rId2" Type="' + DOCREL + '/worksheet" Target="worksheets/sheet2.xml"/>' +
-    '<Relationship Id="rId3" Type="' + DOCREL + '/worksheet" Target="worksheets/sheet3.xml"/>' +
-    '<Relationship Id="rId4" Type="' + DOCREL + '/styles" Target="styles.xml"/></Relationships>');
+    '<Relationship Id="rId2" Type="' + DOCREL + '/styles" Target="styles.xml"/></Relationships>');
   zf('xl/styles.xml', styles);
   zf('xl/worksheets/sheet1.xml', sheet1);
-  zf('xl/worksheets/sheet2.xml', sheet2);
-  zf('xl/worksheets/sheet3.xml', sheet3);
   return zip.generateAsync({type:'blob', mimeType:XLSX_MIME, compression:'DEFLATE'});
 }
 
