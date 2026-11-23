@@ -219,7 +219,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible{
     <h1>Rastreio de massa</h1>
     <p class="sub">VIAR Bloco 1, Dromos Infraestrutura</p>
     <p class="saved" id="saved"></p>
-    <p class="saved" id="ver">Versão 6.3: ticket, novas faixas, Excel igual ao PDF e resumo de caixas</p>
+    <p class="saved" id="ver">Versão 6.4: temperatura da acabadora e da rolagem em cada carga</p>
   </div>
 </header>
 
@@ -392,7 +392,7 @@ var uidN = 0;
 function uid(){ uidN++; return 'c' + Date.now().toString(36) + uidN; }
 
 function novaCarga(prev){
-  var l = {id:uid(), caixa:'', placa:'', ticket:'', usina:'', ei:'', ef:'', sentido:'', faixa:'', comp:'', larg:'', esp:'', dens:'', obs:'', touched:false};
+  var l = {id:uid(), caixa:'', placa:'', ticket:'', usina:'', ei:'', ef:'', sentido:'', faixa:'', comp:'', larg:'', esp:'', dens:'', tAcab:'', tRol:'', obs:'', touched:false};
   if(prev){
     l.placa = prev.placa; l.usina = prev.usina; l.sentido = prev.sentido; l.faixa = prev.faixa;
     l.larg = prev.larg; l.esp = prev.esp; l.dens = prev.dens;      // estacas e comprimento: sempre digitados
@@ -417,6 +417,8 @@ function carregar(){
       if(l.usina == null) l.usina = '';
       if(l.caixa == null) l.caixa = '';
       if(l.ticket == null) l.ticket = '';
+      if(l.tAcab == null) l.tAcab = '';
+      if(l.tRol == null) l.tRol = '';
       if(l.ef == null){                       // rascunho da versão anterior: estaca final automática vira valor digitado
         var a = num(l.efm), b = num(l.ei), c = num(l.comp);
         l.ef = a != null ? String(l.efm) : (b != null && c != null ? fmtIn(b + c/1000, 3) : '');
@@ -684,6 +686,11 @@ function buildCard(l, idx){
   refs.hDens = mk('p', 'hint');
   g.appendChild(campo('Densidade (t/m³)', txt('dens', {num:true, ph:'2,420'}), {hint:refs.hDens}));
 
+  refs.hTa = mk('p', 'hint');
+  g.appendChild(campo('Temp. acabadora (°C)', txt('tAcab', {num:true, ph:'150'}), {hint:refs.hTa}));
+  refs.hTr = mk('p', 'hint');
+  g.appendChild(campo('Temp. rolagem (°C)', txt('tRol', {num:true, ph:'120'}), {hint:refs.hTr}));
+
   var ta = mk('textarea');
   ta.rows = 2; ta.value = l.obs || '';
   ta.addEventListener('input', function(){ l.obs = ta.value; l.touched = true; changed(); });
@@ -747,6 +754,9 @@ function refresh(){
     if(d != null && (d < 1.5 || d > 3.5)) hd = 'Informe em t/m³, ex.: 2,420';
     else if(d != null && ud && num(ud.dens) != null && Math.abs(d - num(ud.dens)) > 0.0005) hd = 'Diferente do cadastro da usina (' + ud.dens + ')';
     u.hDens.textContent = hd;
+    var ta0 = num(l.tAcab), tr0 = num(l.tRol);
+    u.hTa.textContent = (ta0 != null && (ta0 < 50 || ta0 > 250)) ? 'Confira o valor em °C' : '';
+    u.hTr.textContent = (tr0 != null && (tr0 < 50 || tr0 > 250)) ? 'Confira o valor em °C' : '';
     var ei0 = num(l.ei), ef0 = r.c.ef, cp0 = num(l.comp), hc = '';
     if(ei0 != null && ef0 != null && cp0 != null && Math.abs(Math.abs(ef0 - ei0) * 1000 - cp0) > 0.5)
       hc = 'As estacas indicam ' + fmt(Math.abs(ef0 - ei0) * 1000, 2) + ' m';
@@ -1151,24 +1161,26 @@ async function montarPdf(loads){
   function stroke(c){ doc.setDrawColor(c[0], c[1], c[2]); }
 
   var cols = [
-    {t:'Caixa',         w:11, a:'l'},
-    {t:'Placa',         w:19, a:'l'},
+    {t:'Caixa',         w:10, a:'l'},
+    {t:'Placa',         w:17, a:'l'},
     {t:'Nº Ticket',     w:15, a:'l'},
-    {t:'Estaca inicial',w:20, a:'r'},
-    {t:'Estaca final',  w:20, a:'r'},
-    {t:'Compr. (m)',    w:15, a:'r'},
-    {t:'Larg.(m)',      w:12, a:'r'},
-    {t:'Esp. (m)',      w:13, a:'r'},
-    {t:'Faixa',         w:22, a:'c'},
-    {t:'Sentido',       w:20, a:'l'},
-    {t:'Usina',         w:24, a:'l'},
-    {t:'Dens. (t/m3)',  w:16, a:'r', sup:true},
-    {t:'Tonelada',      w:17, a:'r'},
-    {t:'Ton. acum.',    w:19, a:'r'},
-    {t:'Observação',    w:34, a:'l'}
+    {t:'Est. inicial',  w:18, a:'r'},
+    {t:'Est. final',    w:18, a:'r'},
+    {t:'Comp. (m)',     w:14, a:'r'},
+    {t:'Larg. (m)',     w:12, a:'r'},
+    {t:'Esp. (m)',      w:12, a:'r'},
+    {t:'Faixa',         w:20, a:'c'},
+    {t:'Sentido',       w:19, a:'l'},
+    {t:'Usina',         w:22, a:'l'},
+    {t:'Dens. (t/m3)',  w:14, a:'r', sup:true},
+    {t:'Acab. °C',      w:13, a:'r'},
+    {t:'Rolag. °C',     w:13, a:'r'},
+    {t:'Tonelada',      w:15, a:'r'},
+    {t:'Ton. acum.',    w:17, a:'r'},
+    {t:'Observação',    w:28, a:'l'}
   ];
-  var OBS_W = cols[14].w;
-  var TON_X = M; for(var k = 0; k < 12; k++) TON_X += cols[k].w;
+  var OBS_W = cols[16].w;
+  var TON_X = M; for(var k = 0; k < 14; k++) TON_X += cols[k].w;
 
   function celula(s, x, w, y, a){
     if(a === 'r') doc.text(s, x + w - PAD, y, {align:'right'});
@@ -1238,6 +1250,7 @@ async function montarPdf(loads){
       l.caixa || '', l.placa || '', l.ticket || '', fmt(num(l.ei), 3), fmt(r.c.ef, 3),
       fmt(num(l.comp), 2), fmt(num(l.larg), 2), fmt(num(l.esp), 3),
       l.faixa || '', l.sentido || '', nomeUsina(l.usina), fmt(num(l.dens), 3),
+      fmt(num(l.tAcab), 0), fmt(num(l.tRol), 0),
       fmt(r.c.t, 3), fmt(r.acum, 3)
     ];
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
@@ -1254,7 +1267,7 @@ async function montarPdf(loads){
     ink(INK);
     var x = M;
     cols.forEach(function(c, j){
-      if(j < 14) celula(vals[j], x, c.w, y + 4.7, c.a);
+      if(j < 16) celula(vals[j], x, c.w, y + 4.7, c.a);
       else doc.text(obsL, x + PAD, y + 4.7);
       doc.line(x, y, x, y + rh);
       x += c.w;
@@ -1270,7 +1283,7 @@ async function montarPdf(loads){
   stroke(LINE); doc.rect(M, y, TW, 8, 'S');
   ink(INK); doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
   doc.text('Total aplicado', M + PAD, y + 5.4);
-  doc.text(fmt(aplicado, 3), TON_X + cols[12].w - PAD, y + 5.4, {align:'right'});
+  doc.text(fmt(aplicado, 3), TON_X + cols[14].w - PAD, y + 5.4, {align:'right'});
   y += 8 + 10;
 
   // Tabelas de resumo
@@ -1353,7 +1366,7 @@ function xesc(s){
   return String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
-var COLS_L = ['','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
+var COLS_L = ['','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q'];
 
 /* Planilha idêntica ao PDF (mesmas cores, cabeçalho, tabelas e ordem), com fórmulas vivas:
    dá para editar no Excel e imprimir/exportar em PDF (A4 paisagem) com o mesmo visual. */
@@ -1410,12 +1423,12 @@ async function montarXlsx(loads){
   }
   function faixaVal(f){ return /^\d+$/.test(f || '') ? Number(f) : (f || null); }
 
-  var NC = 15, NOTA = '0.000';
+  var NC = 17, NOTA = '0.000';
   var COL = [
     {t:'Caixa',a:'left',w:7.5}, {t:'Placa',a:'left',w:11}, {t:'Nº Ticket',a:'left',w:10},
     {t:'Estaca inicial',a:'right',w:12}, {t:'Estaca final',a:'right',w:12}, {t:'Compr. (m)',a:'right',w:10}, {t:'Larg. (m)',a:'right',w:9}, {t:'Esp. (m)',a:'right',w:9},
     {t:'Faixa',a:'center',w:12}, {t:'Sentido',a:'left',w:12.5}, {t:'Usina',a:'left',w:14},
-    {t:'Dens. (t/m³)',a:'right',w:11}, {t:'Tonelada',a:'right',w:11}, {t:'Ton. acum.',a:'right',w:12}, {t:'Observação',a:'left',w:30}
+    {t:'Dens. (t/m³)',a:'right',w:11}, {t:'Acab. °C',a:'right',w:9}, {t:'Rolag. °C',a:'right',w:9}, {t:'Tonelada',a:'right',w:11}, {t:'Ton. acum.',a:'right',w:12}, {t:'Observação',a:'left',w:28}
   ];
 
   /* ----- faixa superior ----- */
@@ -1440,7 +1453,7 @@ async function montarXlsx(loads){
   var first = R0 + 1, fim = R0 + loads.length, acum = 0, somaK = 0;
   loads.forEach(function(l, i){
     var r = first + i, z = i % 2 ? C.ZEB : null;
-    function st(j, nf){ return sid({sz:8.5, bd:C.LINE, bg:z, h:COL[j].a, nf:nf, wrap:j === 14}); }
+    function st(j, nf){ return sid({sz:8.5, bd:C.LINE, bg:z, h:COL[j].a, nf:nf, wrap:j === 16}); }
     var ei = num(l.ei), ef = num(l.ef), comp = num(l.comp), larg = num(l.larg), esp = num(l.esp), dens = num(l.dens);
     var kVazio = dens == null;
     var k = kVazio ? '' : (comp || 0) * (larg || 0) * (esp || 0) * dens;
@@ -1457,9 +1470,11 @@ async function montarXlsx(loads){
     put(r, 10, st(9), l.sentido || null);
     put(r, 11, st(10), nomeUsina(l.usina) || null);
     put(r, 12, st(11, NOTA), dens);
-    put(r, 13, st(12, NOTA), k, 'IF(L' + r + '="","",F' + r + '*G' + r + '*H' + r + '*L' + r + ')');
-    put(r, 14, st(13, NOTA), kVazio ? '' : acum, i === 0 ? 'IF(M' + r + '="","",M' + r + ')' : 'IF(M' + r + '="","",M' + r + '+N(N' + (r - 1) + '))');
-    put(r, 15, st(14), l.obs || null);
+    put(r, 13, st(12, '0'), num(l.tAcab));
+    put(r, 14, st(13, '0'), num(l.tRol));
+    put(r, 15, st(14, NOTA), k, 'IF(L' + r + '="","",F' + r + '*G' + r + '*H' + r + '*L' + r + ')');
+    put(r, 16, st(15, NOTA), kVazio ? '' : acum, i === 0 ? 'IF(O' + r + '="","",O' + r + ')' : 'IF(O' + r + '="","",O' + r + '+N(P' + (r - 1) + '))');
+    put(r, 17, st(16), l.obs || null);
     var linhasObs = 0;
     String(l.obs || '').split(/\r?\n/).forEach(function(p){ linhasObs += Math.max(1, Math.ceil(p.length / 32)); });
     alt[r] = Math.max(17, linhasObs * 11.5 + 5);
@@ -1468,9 +1483,9 @@ async function montarXlsx(loads){
   var totS = sid({bg:C.TOTF, b:1, sz:9, bd:C.LINE}), totN = sid({bg:C.TOTF, b:1, sz:9, bd:C.LINE, h:'right', nf:NOTA});
   for(c = 1; c <= NC; c++) put(tr, c, totS, null);
   put(tr, 1, totS, 'Total aplicado');
-  put(tr, 13, totN, somaK, 'SUM(M' + first + ':M' + fim + ')');
+  put(tr, 15, totN, somaK, 'SUM(O' + first + ':O' + fim + ')');
   alt[tr] = 18;
-  var MR = '$M$' + first + ':$M$' + fim, KR = '$K$' + first + ':$K$' + fim, IR = '$I$' + first + ':$I$' + fim, JR = '$J$' + first + ':$J$' + fim, AR = '$A$' + first + ':$A$' + fim;
+  var MR = '$O$' + first + ':$O$' + fim, KR = '$K$' + first + ':$K$' + fim, IR = '$I$' + first + ':$I$' + fim, JR = '$J$' + first + ':$J$' + fim, AR = '$A$' + first + ':$A$' + fim;
 
   /* ----- tabelas de resumo ----- */
   var r = tr + 2;
