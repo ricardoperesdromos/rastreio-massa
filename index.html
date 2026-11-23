@@ -219,7 +219,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible{
     <h1>Rastreio de massa</h1>
     <p class="sub">VIAR Bloco 1, Dromos Infraestrutura</p>
     <p class="saved" id="saved"></p>
-    <p class="saved" id="ver">Versão 6.4: temperatura da acabadora e da rolagem em cada carga</p>
+    <p class="saved" id="ver">Versão 6.5: temperaturas também no resumo das caixas (PDF e Excel)</p>
   </div>
 </header>
 
@@ -480,6 +480,8 @@ function caixas(loads){
     g.larg = num(first.l.larg); g.esp = num(first.l.esp); g.dens = num(first.l.dens);
     var comps = g.itens.map(function(r){ return num(r.l.comp); }).filter(function(v){ return v != null; });
     g.comp = comps.length ? comps.reduce(function(a, b){ return a + b; }, 0) : null;
+    function media(k){ var v = g.itens.map(function(r){ return num(r.l[k]); }).filter(function(x){ return x != null; }); return v.length ? v.reduce(function(a, b){ return a + b; }, 0) / v.length : null; }
+    g.tAcab = media('tAcab'); g.tRol = media('tRol');
     g.t = null;
     g.itens.forEach(function(r){ if(r.c.t != null) g.t = (g.t || 0) + r.c.t; });
     g.usinas = [];
@@ -1318,15 +1320,15 @@ async function montarPdf(loads){
   }
 
   var cxs = caixas(loads);
-  tabPdf('Resumo - caixas lançadas',
-    ['Caixa', 'Estaca inicial', 'Estaca final', 'Compr. (m)', 'Larg. (m)', 'Esp. (m)', 'Faixa', 'Sentido', 'Usina', 'Dens.', 'Tonelada', 'Ton. acum.'],
-    [26, 24, 24, 18, 15, 15, 24, 24, 40, 17, 24, 26], ['l', 'r', 'r', 'r', 'r', 'r', 'c', 'l', 'l', 'r', 'r', 'r'],
+  tabPdf('Resumo - caixas lançadas (temperaturas: média da caixa)',
+    ['Caixa', 'Estaca inicial', 'Estaca final', 'Compr. (m)', 'Larg. (m)', 'Esp. (m)', 'Faixa', 'Sentido', 'Usina', 'Dens.', 'Acab. °C', 'Rolag. °C', 'Tonelada', 'Ton. acum.'],
+    [24, 22, 22, 17, 14, 14, 18, 22, 38, 14, 13, 13, 22, 24], ['l', 'r', 'r', 'r', 'r', 'r', 'c', 'l', 'l', 'r', 'r', 'r', 'r', 'r'],
     cxs.map(function(c){
       return [c.rotulo, fmt(c.ei, 3) || '-', fmt(c.ef, 3) || '-', fmt(c.comp, 2) || '-', fmt(c.larg, 2) || '-', fmt(c.esp, 3) || '-',
-        c.faixa || '-', c.sentido || '-', doc.splitTextToSize(c.usinas.join(', ') || '-', 36)[0], fmt(c.dens, 3) || '-',
-        c.t == null ? '-' : fmt(c.t, 3), c.acum == null ? '-' : fmt(c.acum, 3)];
+        c.faixa || '-', c.sentido || '-', doc.splitTextToSize(c.usinas.join(', ') || '-', 34)[0], fmt(c.dens, 3) || '-',
+        fmt(c.tAcab, 0) || '-', fmt(c.tRol, 0) || '-', c.t == null ? '-' : fmt(c.t, 3), c.acum == null ? '-' : fmt(c.acum, 3)];
     }),
-    ['Total', '', '', '', '', '', '', '', '', '', fmt(aplicado, 3), fmt(aplicado, 3)]);
+    ['Total', '', '', '', '', '', '', '', '', '', '', '', fmt(aplicado, 3), fmt(aplicado, 3)]);
 
   var gr = grupos(loads);
   tabPdf('Avanço por faixa e sentido',
@@ -1501,10 +1503,10 @@ async function montarXlsx(loads){
 
   // Resumo - caixas lançadas
   var cxs = caixas(loads);
-  titulo('Resumo - caixas lançadas');
-  var sp1 = [[1,2],[3,4],[5,5],[6,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,13],[14,14]];
-  var al1 = ['left','right','right','right','right','right','center','left','left','right','right','right'];
-  cabecalho(sp1, ['Caixa','Estaca inicial','Estaca final','Compr. (m)','Larg. (m)','Esp. (m)','Faixa','Sentido','Usina','Dens. (t/m³)','Tonelada','Ton. acum.'], al1);
+  titulo('Resumo - caixas lançadas (temperaturas: média da caixa)');
+  var sp1 = [[1,2],[3,4],[5,5],[6,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15],[16,16]];
+  var al1 = ['left','right','right','right','right','right','center','left','left','right','right','right','right','right'];
+  cabecalho(sp1, ['Caixa','Estaca inicial','Estaca final','Compr. (m)','Larg. (m)','Esp. (m)','Faixa','Sentido','Usina','Dens. (t/m³)','Acab. °C','Rolag. °C','Tonelada','Ton. acum.'], al1);
   var cx0 = r;
   cxs.forEach(function(cx){
     var key = 'IFERROR(LEFT(A' + r + ',FIND(" ",A' + r + ')-1),A' + r + ')';
@@ -1519,16 +1521,18 @@ async function montarXlsx(loads){
     celulaS(sp1, 7, al1, o, cx.sentido || null);
     celulaS(sp1, 8, al1, o, cx.usinas.join(', ') || null);
     celulaS(sp1, 9, al1, o, cx.dens, null, NOTA);
-    if(cx.num) celulaS(sp1, 10, al1, o, cx.t || 0, 'SUMIFS(' + MR + ',' + AR + ',' + key + ')+SUMIFS(' + MR + ',' + AR + ',' + key + '&".*")', NOTA);
-    else celulaS(sp1, 10, al1, o, cx.t, null, NOTA);
-    celulaS(sp1, 11, al1, o, cx.acum == null ? '' : cx.acum, 'IF(M' + r + '="","",SUM(M$' + cx0 + ':M' + r + '))', NOTA);
+    celulaS(sp1, 10, al1, o, cx.tAcab, null, '0');
+    celulaS(sp1, 11, al1, o, cx.tRol, null, '0');
+    if(cx.num) celulaS(sp1, 12, al1, o, cx.t || 0, 'SUMIFS(' + MR + ',' + AR + ',' + key + ')+SUMIFS(' + MR + ',' + AR + ',' + key + '&".*")', NOTA);
+    else celulaS(sp1, 12, al1, o, cx.t, null, NOTA);
+    celulaS(sp1, 13, al1, o, cx.acum == null ? '' : cx.acum, 'IF(O' + r + '="","",SUM(O$' + cx0 + ':O' + r + '))', NOTA);
     alt[r] = 16; r++;
   });
   var cx1 = r - 1, ot = {b:1, bg:C.TOTF};
   sp1.forEach(function(sp, j){ celulaS(sp1, j, al1, ot, null); });
   celulaS(sp1, 0, al1, ot, 'Total');
-  celulaS(sp1, 10, al1, ot, somaK, 'SUM(M' + cx0 + ':M' + cx1 + ')', NOTA);
-  celulaS(sp1, 11, al1, ot, somaK, 'M' + r, NOTA);
+  celulaS(sp1, 12, al1, ot, somaK, 'SUM(O' + cx0 + ':O' + cx1 + ')', NOTA);
+  celulaS(sp1, 13, al1, ot, somaK, 'O' + r, NOTA);
   alt[r] = 16; r += 2;
 
   // Avanço por faixa e sentido
